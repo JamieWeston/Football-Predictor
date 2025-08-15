@@ -22,6 +22,25 @@ jobs:
 
       - name: Install deps
         run: pip install -r requirements.txt
+      - name: Debug environment
+        run: |
+          python --version
+          pip list
+          echo "--- repo root ---"
+          ls -la
+          echo "--- tree ---"
+          ls -R
+          python - <<'PY'
+import sys, os
+print("CWD:", os.getcwd())
+print("sys.path:", sys.path)
+try:
+    import scripts, scripts.model, scripts.sources
+    print("imports ok")
+except Exception as e:
+    print("import error:", e)
+    raise
+PY
 
       - name: Generate predictions & tips
         run: python -m scripts.generate
