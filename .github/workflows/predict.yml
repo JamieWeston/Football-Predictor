@@ -21,7 +21,7 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
       - name: Generate predictions & tips
-        run: python scripts/generate.py
+        run: python -m scripts.generate
         env:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
