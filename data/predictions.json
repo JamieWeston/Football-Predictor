@@ -1,0 +1,125 @@
+{
+  "generated_utc": "2025-08-15T23:34:09.686840+00:00",
+  "predictions": [
+    {
+      "match_id": "2025-08-16_1230_AV-NEW",
+      "home": "Aston Villa",
+      "away": "Newcastle United",
+      "kickoff_utc": "2025-08-16T11:30:00Z",
+      "probs": {
+        "home": 0.3342,
+        "draw": 0.2372,
+        "away": 0.4286
+      },
+      "btts": {
+        "yes": 0.5738,
+        "no": 0.4262
+      },
+      "totals_2_5": {
+        "over": 0.5503,
+        "under": 0.4497
+      },
+      "xg": {
+        "home": 1.333,
+        "away": 1.541
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-16_1500_BHA-FUL",
+      "home": "Brighton",
+      "away": "Fulham",
+      "kickoff_utc": "2025-08-16T14:00:00Z",
+      "probs": {
+        "home": 0.5807,
+        "draw": 0.2105,
+        "away": 0.2088
+      },
+      "btts": {
+        "yes": 0.5554,
+        "no": 0.4446
+      },
+      "totals_2_5": {
+        "over": 0.5768,
+        "under": 0.4232
+      },
+      "xg": {
+        "home": 1.918,
+        "away": 1.064
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-16_1500_SUN-WHU",
+      "home": "Sunderland",
+      "away": "West Ham United",
+      "kickoff_utc": "2025-08-16T14:00:00Z",
+      "probs": {
+        "home": 0.2341,
+        "draw": 0.2189,
+        "away": 0.5469
+      },
+      "btts": {
+        "yes": 0.5614,
+        "no": 0.4386
+      },
+      "totals_2_5": {
+        "over": 0.5682,
+        "under": 0.4318
+      },
+      "xg": {
+        "home": 1.119,
+        "away": 1.828
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-16_1500_TOT-BUR",
+      "home": "Tottenham Hotspur",
+      "away": "Burnley",
+      "kickoff_utc": "2025-08-16T14:00:00Z",
+      "probs": {
+        "home": 0.8115,
+        "draw": 0.1198,
+        "away": 0.0687
+      },
+      "btts": {
+        "yes": 0.4798,
+        "no": 0.5202
+      },
+      "totals_2_5": {
+        "over": 0.6869,
+        "under": 0.3131
+      },
+      "xg": {
+        "home": 2.741,
+        "away": 0.718
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-16_1730_WOL-MCI",
+      "home": "Wolves",
+      "away": "Manchester City",
+      "kickoff_utc": "2025-08-16T16:30:00Z",
+      "probs": {
+        "home": 0.041,
+        "draw": 0.0862,
+        "away": 0.8728
+      },
+      "btts": {
+        "yes": 0.4429,
+        "no": 0.5571
+      },
+      "totals_2_5": {
+        "over": 0.7397,
+        "under": 0.2603
+      },
+      "xg": {
+        "home": 0.62,
+        "away": 3.087
+      },
+      "model_version": "poisson_dc_v1"
+    }
+  ]
+}
