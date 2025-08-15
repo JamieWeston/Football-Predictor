@@ -1,0 +1,73 @@
+{
+  "generated_utc": "2025-08-15T23:33:58.338780+00:00",
+  "rules": {
+    "edge_threshold_pct": 2.0
+  },
+  "tips": [
+    {
+      "match_id": "2025-08-16_1230_AV-NEW",
+      "home": "Aston Villa",
+      "away": "Newcastle United",
+      "tip": {
+        "market": "None",
+        "selection": "No Bet"
+      },
+      "model_prob": null,
+      "book_odds": null,
+      "source": "",
+      "edge_pct": 0.0
+    },
+    {
+      "match_id": "2025-08-16_1500_BHA-FUL",
+      "home": "Brighton",
+      "away": "Fulham",
+      "tip": {
+        "market": "None",
+        "selection": "No Bet"
+      },
+      "model_prob": null,
+      "book_odds": null,
+      "source": "",
+      "edge_pct": 0.0
+    },
+    {
+      "match_id": "2025-08-16_1500_SUN-WHU",
+      "home": "Sunderland",
+      "away": "West Ham United",
+      "tip": {
+        "market": "None",
+        "selection": "No Bet"
+      },
+      "model_prob": null,
+      "book_odds": null,
+      "source": "",
+      "edge_pct": 0.0
+    },
+    {
+      "match_id": "2025-08-16_1500_TOT-BUR",
+      "home": "Tottenham Hotspur",
+      "away": "Burnley",
+      "tip": {
+        "market": "None",
+        "selection": "No Bet"
+      },
+      "model_prob": null,
+      "book_odds": null,
+      "source": "",
+      "edge_pct": 0.0
+    },
+    {
+      "match_id": "2025-08-16_1730_WOL-MCI",
+      "home": "Wolves",
+      "away": "Manchester City",
+      "tip": {
+        "market": "None",
+        "selection": "No Bet"
+      },
+      "model_prob": null,
+      "book_odds": null,
+      "source": "",
+      "edge_pct": 0.0
+    }
+  ]
+}
