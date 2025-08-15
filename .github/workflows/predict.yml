@@ -12,8 +12,10 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,32 +25,12 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # Optional: debug what the runner can see (remove after it works)
-      - name: Debug environment
-        run: |
-          python --version
-          pip list
-          echo "--- repo root ---"
-          ls -la
-          echo "--- tree ---"
-          ls -R
-          python - <<'PY'
-          import sys, os
-          print("CWD:", os.getcwd())
-          print("sys.path:", sys.path)
-          try:
-              import scripts, scripts.model, scripts.sources
-              print("imports ok")
-          except Exception as e:
-              print("import error:", e)
-              raise
-          PY
-
       - name: Generate predictions & tips
-        run: python -m scripts.generate
         env:
+          PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: python -m scripts.generate
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
@@ -57,4 +39,4 @@ jobs:
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update predictions and tips"
-          # reviewers: ${{ vars.REVIEWERS }}   # (optional) add back if you set the variable
+          # reviewers: ${{ vars.REVIEWERS }}   # optional — add back if you set this repo variable
