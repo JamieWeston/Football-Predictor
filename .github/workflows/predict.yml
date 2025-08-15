@@ -1,0 +1,35 @@
+name: Predict & open PR
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * 3"   # Wed 06:30 UTC
+    - cron: "30 6 * * 6"   # Sat 06:30 UTC
+
+jobs:
+  run-and-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Generate predictions & tips
+        run: python scripts/generate.py
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: "auto/update-${{ github.run_id }}"
+          title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
+          body-path: "reports/PR_BODY.md"
+          commit-message: "chore: update predictions and tips"
+          reviewers: ${{ vars.REVIEWERS }}

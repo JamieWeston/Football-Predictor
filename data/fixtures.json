@@ -1,0 +1,35 @@
+{
+  "generated_utc": "2025-08-15T22:46:47.860292Z",
+  "fixtures": [
+    {
+      "match_id": "2025-08-16_1230_AV-NEW",
+      "kickoff_utc": "2025-08-16T11:30:00Z",
+      "home": "Aston Villa",
+      "away": "Newcastle United"
+    },
+    {
+      "match_id": "2025-08-16_1500_BHA-FUL",
+      "kickoff_utc": "2025-08-16T14:00:00Z",
+      "home": "Brighton",
+      "away": "Fulham"
+    },
+    {
+      "match_id": "2025-08-16_1500_SUN-WHU",
+      "kickoff_utc": "2025-08-16T14:00:00Z",
+      "home": "Sunderland",
+      "away": "West Ham United"
+    },
+    {
+      "match_id": "2025-08-16_1500_TOT-BUR",
+      "kickoff_utc": "2025-08-16T14:00:00Z",
+      "home": "Tottenham Hotspur",
+      "away": "Burnley"
+    },
+    {
+      "match_id": "2025-08-16_1730_WOL-MCI",
+      "kickoff_utc": "2025-08-16T16:30:00Z",
+      "home": "Wolves",
+      "away": "Manchester City"
+    }
+  ]
+}
