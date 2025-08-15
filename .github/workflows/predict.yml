@@ -32,4 +32,3 @@ jobs:
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update predictions and tips"
-          reviewers: ${{ vars.REVIEWERS }}
