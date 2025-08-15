@@ -1,47 +1,42 @@
 """
-Generate predictions and simple tips.
+Generate predictions and probability-first tips (no odds required).
 
-- Reads fixtures and team ratings
-- Builds Poisson + Dixon–Coles score grids
-- Outputs:
-    data/predictions.json
-    data/tips.json
-    reports/PR_BODY.md
+- Primary tip = most likely 1X2 outcome (Home/Draw/Away)
+- Alternatives (optional) = BTTS or Over/Under 2.5 if very likely
 
-Safe to run as a module (python -m scripts.generate) or as a script.
+Outputs:
+  data/predictions.json
+  data/tips.json
+  reports/PR_BODY.md
 """
 
-import os
-import json
+import os, json
 from datetime import datetime, timezone
 
-# ---- Robust imports (works both as module and plain script) ----
+# Robust imports (works as module or script)
 try:
     from .model import PoissonDC
-    from .sources import load_fixtures, load_team_ratings, fetch_best_odds
-except ImportError:  # fallback if executed as plain script
+    from .sources import load_fixtures, load_team_ratings, fetch_best_odds  # fetch_best_odds unused
+except ImportError:
     from scripts.model import PoissonDC
-    from scripts.sources import load_fixtures, load_team_ratings, fetch_best_odds
+    from scripts.sources import load_fixtures, load_team_ratings, fetch_best_odds  # fetch_best_odds unused
 
-# ---- Paths ----
 THIS_DIR = os.path.dirname(__file__)
-OUT_DIR = os.path.abspath(os.path.join(THIS_DIR, "..", "data"))
-REP_DIR = os.path.abspath(os.path.join(THIS_DIR, "..", "reports"))
+OUT_DIR  = os.path.abspath(os.path.join(THIS_DIR, "..", "data"))
+REP_DIR  = os.path.abspath(os.path.join(THIS_DIR, "..", "reports"))
 
-EDGE_THRESHOLD = 0.02  # 2% relative edge to surface a tip
-
+# ---- Tunables ----
+ALT_THRESHOLD = 0.55   # show BTTS / O2.5 alternatives only if ≥ 55%
+# -------------------
 
 def main() -> None:
-    # Ensure output folders exist
     os.makedirs(OUT_DIR, exist_ok=True)
     os.makedirs(REP_DIR, exist_ok=True)
 
-    # Load inputs
-    fixtures = load_fixtures()          # list of {match_id, kickoff_utc, home, away}
-    ratings = load_team_ratings()       # dict team -> z-rating
-    model = PoissonDC()                 # Poisson + Dixon–Coles
+    fixtures = load_fixtures()
+    ratings  = load_team_ratings()
+    model    = PoissonDC()
 
-    # ---- Build predictions ----
     predictions = []
     for fx in fixtures:
         home, away = fx["home"], fx["away"]
@@ -65,86 +60,64 @@ def main() -> None:
             "model_version": "poisson_dc_v1"
         })
 
-    # ---- Optional odds → tips (if an odds API is configured) ----
-    odds = fetch_best_odds()  # list of {match_id, market, selection, decimal_odds, source, fetched_utc}
-
+    # ----- Probability-first tips (no odds) -----
     tips = []
-    for pred in predictions:
-        mid = pred["match_id"]
-        # Model lines in a common format
-        model_lines = {
-            ("1X2", "Home"): pred["probs"]["home"],
-            ("1X2", "Draw"): pred["probs"]["draw"],
-            ("1X2", "Away"): pred["probs"]["away"],
-            ("BTTS", "Yes"): pred["btts"]["yes"],
-            ("BTTS", "No"):  pred["btts"]["no"],
-            ("O2.5", "Over"): pred["totals_2_5"]["over"],
-            ("O2.5", "Under"): pred["totals_2_5"]["under"],
-        }
+    for p in predictions:
+        # Primary = most likely 1X2
+        oneX2 = [("Home", p["probs"]["home"]), ("Draw", p["probs"]["draw"]), ("Away", p["probs"]["away"])]
+        primary_sel, primary_prob = max(oneX2, key=lambda x: x[1])
 
-        market_rows = [o for o in odds if o.get("match_id") == mid]
-        best_edge = None
-        best_row = None
-
-        for o in market_rows:
-            key = (o.get("market"), o.get("selection"))
-            if key not in model_lines:
-                continue
-            p = float(model_lines[key])
-            if p <= 0.0 or p >= 1.0:
-                continue
-            fair = 1.0 / p
-            dec = float(o["decimal_odds"])
-            edge = (dec - fair) / fair  # relative edge
-            if (best_edge is None) or (edge > best_edge):
-                best_edge = edge
-                best_row = o
-
-        if best_row is not None and best_edge is not None and best_edge >= EDGE_THRESHOLD:
-            tips.append({
-                "match_id": mid,
-                "home": pred["home"],
-                "away": pred["away"],
-                "tip": {"market": best_row["market"], "selection": best_row["selection"]},
-                "model_prob": round(model_lines[(best_row["market"], best_row["selection"])], 4),
-                "book_odds": float(best_row["decimal_odds"]),
-                "source": best_row.get("source", ""),
-                "edge_pct": round(best_edge * 100.0, 1)
+        # Alternatives if strong
+        alts = []
+        if max(p["btts"]["yes"], p["btts"]["no"]) >= ALT_THRESHOLD:
+            alts.append({
+                "market": "BTTS",
+                "selection": "Yes" if p["btts"]["yes"] >= p["btts"]["no"] else "No",
+                "prob": round(max(p["btts"]["yes"], p["btts"]["no"]), 4)
             })
-        else:
-            tips.append({
-                "match_id": mid,
-                "home": pred["home"],
-                "away": pred["away"],
-                "tip": {"market": "None", "selection": "No Bet"},
-                "model_prob": None,
-                "book_odds": None,
-                "source": "",
-                "edge_pct": 0.0
+        if max(p["totals_2_5"]["over"], p["totals_2_5"]["under"]) >= ALT_THRESHOLD:
+            alts.append({
+                "market": "O2.5",
+                "selection": "Over" if p["totals_2_5"]["over"] >= p["totals_2_5"]["under"] else "Under",
+                "prob": round(max(p["totals_2_5"]["over"], p["totals_2_5"]["under"]), 4)
             })
 
-    # ---- Write outputs ----
+        tips.append({
+            "match_id": p["match_id"],
+            "home": p["home"],
+            "away": p["away"],
+            "tip": {"market": "1X2", "selection": primary_sel},
+            "model_prob": round(primary_prob, 4),  # 0..1
+            "book_odds": None,
+            "source": "most-likely",
+            "edge_pct": 0.0,
+            "alts": alts  # optional array of {market, selection, prob}
+        })
+
+    # ----- Write outputs -----
     generated = datetime.now(timezone.utc).isoformat()
 
     with open(os.path.join(OUT_DIR, "predictions.json"), "w") as f:
         json.dump({"generated_utc": generated, "predictions": predictions}, f, indent=2)
 
     with open(os.path.join(OUT_DIR, "tips.json"), "w") as f:
-        json.dump({"generated_utc": generated,
-                   "rules": {"edge_threshold_pct": EDGE_THRESHOLD * 100.0},
-                   "tips": tips}, f, indent=2)
+        json.dump({
+            "generated_utc": generated,
+            "rules": {"mode": "probability-first", "alt_threshold": ALT_THRESHOLD},
+            "tips": tips
+        }, f, indent=2)
 
-    # ---- PR body for the GitHub Action ----
+    # PR body
     with open(os.path.join(REP_DIR, "PR_BODY.md"), "w") as f:
         f.write("# Weekly predictions update\n\n")
         f.write(f"Generated: {generated}\n\n")
-        f.write("## Tips\n")
+        f.write("## Picks (probability-first)\n")
         for t in tips:
-            line = f"- **{t['home']} vs {t['away']}** — {t['tip']['market']} / {t['tip']['selection']}"
-            if t["model_prob"] is not None:
-                line += f" (model {t['model_prob']:.0%}, odds {t['book_odds']}, edge {t['edge_pct']:.1f}%)"
+            line = f"- **{t['home']} vs {t['away']}** — 1X2 / {t['tip']['selection']} (model {t['model_prob']:.0%})"
+            if t["alts"]:
+                altbits = [f"{a['market']} {a['selection']} {a['prob']:.0%}" for a in t["alts"]]
+                line += " | Alts: " + ", ".join(altbits)
             f.write(line + "\n")
-
 
 if __name__ == "__main__":
     main()
