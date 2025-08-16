@@ -22,6 +22,14 @@ CANONICAL_ALIASES = {
     "aston villa": {"villa"},
     "afc bournemouth": {"bournemouth"},
     "sunderland afc": {"sunderland"},
+    "brentford": set(),
+    "fulham": set(),
+    "everton": set(),
+    "chelsea": set(),
+    "arsenal": set(),
+    "liverpool": set(),
+    "burnley": set(),
+    "wolves": {"wolverhampton wanderers"},
 }
 
 def expand_with_aliases(raw: dict[str, float]) -> dict[str, float]:
