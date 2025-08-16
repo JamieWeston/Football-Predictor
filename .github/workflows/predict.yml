@@ -32,21 +32,39 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # Rebuild team strengths from finished matches (simple Elo)
+      # Build rolling strengths from recent results (decay)
+      - name: Build rolling strengths from results
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: python -m scripts.strengths_xg
+
+      # Optional: keep Elo CSV too (fallback / sanity)
       - name: Update team ratings (Elo from finished matches)
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
         run: python -m scripts.update_ratings_elo
 
-      - name: Generate predictions & tips
+      - name: Generate predictions & tips (with scorelines/cards/corners)
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      # 1) Create the PR
+      - name: Archive predictions snapshot
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m scripts.archive_predictions
+
+      - name: Evaluate & update accuracy dashboards
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: python -m scripts.evaluate_backtest
+
+      # Create PR with updated data, then auto-merge via GitHub API
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
@@ -54,11 +72,9 @@ jobs:
           branch: "auto/update-${{ github.run_id }}"
           title: "Auto: refreshed ratings & predictions – run #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update ratings, predictions and tips"
+          commit-message: "chore: update strengths, predictions, tips, and metrics"
           delete-branch: true
-          # labels: automated   # only if the label already exists
 
-      # 2) Merge the PR via the GitHub API (squash)
       - name: Merge Pull Request (squash)
         if: steps.cpr.outputs.pull-request-number
         uses: actions/github-script@v7
@@ -68,15 +84,11 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = Number(process.env.PR_NUMBER || 0);
-            if (!pr) {
-              core.setFailed('No pull-request number from create-pull-request step.');
-            } else {
-              core.info(`Merging PR #${pr}...`);
-              await github.rest.pulls.merge({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: pr,
-                merge_method: 'squash'
-              });
-              core.info(`Merged PR #${pr}.`);
-            }
+            if (!pr) { core.setFailed('No PR number to merge'); }
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr,
+              merge_method: 'squash'
+            });
+            core.info(`Merged PR #${pr}`);
