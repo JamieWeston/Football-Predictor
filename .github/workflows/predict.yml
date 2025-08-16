@@ -8,6 +8,8 @@ on:
     - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
     - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
 
+# NOTE: we removed labels entirely to avoid the "permission to create labels" warning.
+# If you ever want labels, add:  issues: write
 permissions:
   contents: write
   pull-requests: write
@@ -23,8 +25,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,22 +34,22 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # 1) Fetch rolling team match xG from Understat
+      # 1) Fetch rolling team match xG from Understat (async; cached in data/)
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
-          # Optional overrides:
+          # Optional:
           # US_SEASONS: "2023,2024,2025"
           # US_SLEEP_MS: "300"
         run: python -m scripts.fetch_understat_xg
 
-      # 2) Compute team strengths from Understat rows
+      # 2) Compute team strengths from Understat rows (writes data/team_strengths.json)
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # 3) Generate predictions with strengths
+      # 3) Generate predictions & tips (writes data/predictions.json + data/tips.json)
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -57,70 +57,25 @@ jobs:
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      # 4) Create PR (keep going even if it errors)
+      # 4) Smoke test the outputs (fail fast if anything looks off)
+      - name: Smoke-test predictions
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m scripts.smoke
+
+      # 5) Create PR and auto-merge (squash). No labels here -> no label permission needed.
       - name: Create Pull Request
-        id: cpr
         uses: peter-evans/create-pull-request@v6
-        continue-on-error: true
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update strengths, predictions and tips"
-          labels: automation,predictions
-          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          delete-branch: true
+          merge: true
+          merge-method: squash
 
-      # 5) Auto-merge (squash). If the PR number isn't in outputs, find it by branch.
-      - name: Auto-merge PR (squash)
-        if: always()   # run even if previous step had a non-zero exit
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const branch = `auto/update-${{ github.run_id }}`;
-            // Prefer the action output if present:
-            let prNumber = parseInt("${{ steps.cpr.outputs['pull-request-number'] || '' }}", 10);
-            if (!prNumber || Number.isNaN(prNumber)) {
-              // Look up any open PR for this head branch
-              const { data } = await github.rest.pulls.list({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: 'open',
-                head: `${context.repo.owner}:${branch}`
-              });
-              if (data.length) prNumber = data[0].number;
-            }
-            if (!prNumber) {
-              core.info("No PR found (likely no changes). Skipping merge.");
-              return;
-            }
-            core.info(`Merging PR #${prNumber} with squash...`);
-            await github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              merge_method: "squash"
-            });
-
-      - name: Delete PR branch
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const ref = `heads/auto/update-${{ github.run_id }}`;
-            try {
-              await github.rest.git.deleteRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref
-              });
-              core.info(`Deleted ${ref}`);
-            } catch (e) {
-              core.warning(`Delete ref skipped or failed: ${e.message}`);
-            }
-
-      # optional diagnostic
+      # Optional: show useful dirs in logs
       - name: Post Checkout
         run: |
           echo "--- data dir ---"
