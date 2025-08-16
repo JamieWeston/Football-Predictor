@@ -46,7 +46,7 @@ jobs:
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      # 1) Create the PR and capture its number
+      # 1) Create the PR
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
@@ -56,13 +56,27 @@ jobs:
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update ratings, predictions and tips"
           delete-branch: true
-          # labels: automated           # <- OPTIONAL: only if the label already exists
+          # labels: automated   # only if the label already exists
 
-      # 2) Immediately merge that PR (squash)
-      - name: Merge Pull Request
+      # 2) Merge the PR via the GitHub API (squash)
+      - name: Merge Pull Request (squash)
         if: steps.cpr.outputs.pull-request-number
-        uses: peter-evans/merge-pull-request@v3
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
-          merge-method: squash
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = Number(process.env.PR_NUMBER || 0);
+            if (!pr) {
+              core.setFailed('No pull-request number from create-pull-request step.');
+            } else {
+              core.info(`Merging PR #${pr}...`);
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr,
+                merge_method: 'squash'
+              });
+              core.info(`Merged PR #${pr}.`);
+            }
