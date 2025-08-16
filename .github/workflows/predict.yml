@@ -3,15 +3,15 @@ name: Predict & open PR
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 6 * * 3"   # Wed 06:30 UTC
-    - cron: "30 6 * * 6"   # Sat 06:30 UTC
+    - cron: "30 6 * * *"   # every day 06:30 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   run-and-pr:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout
@@ -27,9 +27,12 @@ jobs:
 
       - name: Generate predictions & tips
         env:
+          # Make repository root importable so 'scripts' package is found
           PYTHONPATH: ${{ github.workspace }}
+          # Your football-data.org token (set in repo Settings → Secrets → Actions)
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          # How many days ahead to fetch SCHEDULED PL fixtures (tweak as you like)
+          FD_WINDOW_DAYS: "10"
         run: python -m scripts.generate
 
       - name: Create Pull Request
@@ -39,4 +42,4 @@ jobs:
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update predictions and tips"
-          # reviewers: ${{ vars.REVIEWERS }}   # optional — add back if you set this repo variable
+          # reviewers: ${{ vars.REVIEWERS }}   # optional: add back if you set this repo variable
