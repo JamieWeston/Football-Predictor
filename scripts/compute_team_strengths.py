@@ -1,111 +1,119 @@
 # scripts/compute_team_strengths.py
-import os, json, math, statistics
+import os
+import json
+import math
+import statistics
+from collections import defaultdict
 from datetime import datetime
-from scripts.team_names import norm, expand_with_aliases
 
-ROOT = os.path.dirname(os.path.dirname(__file__))
-DATA = os.path.join(ROOT, "data")
-IN_PATH = os.path.join(DATA, "understat_team_matches.json")
-OUT_PATH = os.path.join(DATA, "team_strengths.json")
+IN_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "understat_team_matches.json")
+OUT_STRENGTHS = os.path.join(os.path.dirname(__file__), "..", "data", "team_strengths.json")
+OUT_RATINGS = os.path.join(os.path.dirname(__file__), "..", "data", "team_ratings.json")
 
-# Tunable knobs
-HALF_LIFE_MATCHES = 10          # exponential decay half-life in matches
-MIN_MATCHES_FOR_CLUB_HA = 15    # need at least this many home matches to estimate club-HA
-GLOBAL_HA_PRIOR = 0.20          # log-goal prior (approx +20% home scoring)
-REG_TO_MEAN_WEIGHT = 6.0        # pseudo-matches to pull towards league mean
-CLIP_ATTACK = (-0.6, 0.6)       # avoid extreme logs
-CLIP_DEF    = (-0.6, 0.6)
+# How many most-recent matches per team to use
+MAX_MATCHES_PER_TEAM = int(os.getenv("US_MAX_MATCHES", "12"))
 
-def _exp_decay_weights(n, half_life):
-    # weights for most-recent-first arrays length n
-    lam = math.log(2) / max(1e-9, half_life)
-    return [math.exp(-lam*i) for i in range(n)]
+# Fallback league xG per team if we can't compute a mean
+LEAGUE_FALLBACK_XG = float(os.getenv("LEAGUE_BASE_XG", "1.35"))
+
+
+def safe_mean(values, default):
+    """Return mean(values) ignoring None; default if empty."""
+    vals = [v for v in values if isinstance(v, (int, float))]
+    if not vals:
+        return default
+    return statistics.mean(vals)
+
 
 def main():
-    # load rows
-    if not os.path.exists(IN_PATH):
-        raise SystemExit(f"[err] missing {IN_PATH}; run fetch_understat_xg.py first")
+    # --- Load Understat rows ---
+    with open(IN_FILE, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+    rows = raw.get("rows", [])
 
-    with open(IN_PATH, "r", encoding="utf-8") as f:
-        rows = json.load(f)["rows"]
+    # Sort rows by (team, date) so that slicing last-N is the most recent window
+    rows_sorted = sorted(
+        (r for r in rows if r.get("team")),
+        key=lambda r: (r.get("team"), r.get("date") or "")
+    )
 
-    # group matches by team_norm, sort by date ascending
-    by_team = {}
-    for r in rows:
-        tn = norm(r["team"])
-        by_team.setdefault(tn, []).append(r)
-    for tn in by_team:
-        by_team[tn].sort(key=lambda x: x["date"])
+    per_team_for = defaultdict(list)
+    per_team_against = defaultdict(list)
+    all_for = []
+    all_against = []
 
-    # league means (overall xG for/against per match)
-    all_xg_for = [r["xg_for"] for r in rows]
-    all_xg_ag  = [r["xg_against"] for r in rows]
-    league_xg_for = statistics.mean(all_xg_for) if all_xg_for else 1.35
-    league_xg_ag  = statistics.mean(all_xg_ag)  if all_xg_ag  else 1.35
+    # Collect valid xG values
+    for r in rows_sorted:
+        team = r.get("team")
+        xf = r.get("xg_for")
+        xa = r.get("xg_against")
+
+        if isinstance(xf, (int, float)) and isinstance(xa, (int, float)):
+            per_team_for[team].append(xf)
+            per_team_against[team].append(xa)
+            all_for.append(xf)
+            all_against.append(xa)
+
+    # League baselines
+    league_xg_for = safe_mean(all_for, LEAGUE_FALLBACK_XG)
+    league_xg_against = safe_mean(all_against, LEAGUE_FALLBACK_XG)
 
     strengths = {}
-    club_ha = {}  # club-specific HA in log-scale
+    ratings = {}
 
-    # compute club-specific HA if enough data
-    for tn, games in by_team.items():
-        home_for = []; home_ag = []
-        away_for = []; away_ag = []
-        for g in games:
-            if g["is_home"]:
-                home_for.append(g["xg_for"]); home_ag.append(g["xg_against"])
-            else:
-                away_for.append(g["xg_for"]); away_ag.append(g["xg_against"])
-        if len(home_for) >= MIN_MATCHES_FOR_CLUB_HA and len(away_for) >= MIN_MATCHES_FOR_CLUB_HA:
-            # estimate HA as excess of home for vs away for
-            m_home = statistics.mean(home_for)
-            m_away = statistics.mean(away_for)
-            # avoid zero
-            m_home = max(0.05, m_home); m_away = max(0.05, m_away)
-            ha = math.log(m_home / m_away)
-            # shrink towards global prior
-            w = min(1.0, (len(home_for)+len(away_for)) / 50.0)
-            club_ha[tn] = (1-w) * GLOBAL_HA_PRIOR + w * ha
+    for team in sorted(per_team_for.keys()):
+        last_for = per_team_for[team][-MAX_MATCHES_PER_TEAM:]
+        last_against = per_team_against[team][-MAX_MATCHES_PER_TEAM:]
 
-    # global HA fallback
-    global_ha = GLOBAL_HA_PRIOR
+        tm_for = safe_mean(last_for, league_xg_for)
+        tm_against = safe_mean(last_against, league_xg_against)
 
-    # per-team rolling strengths with exponential decay
-    for tn, games in by_team.items():
-        # use last 38 matches max for rolling (about a season)
-        last = games[-60:]  # allow up to ~1.5 seasons
-        # most-recent first for weights
-        last_rev = list(reversed(last))
-        w = _exp_decay_weights(len(last_rev), HALF_LIFE_MATCHES)
-        w_sum = sum(w) if w else 1.0
+        att_str = tm_for / league_xg_for if league_xg_for > 0 else 1.0
+        # Def strength: higher is better (concede less than league avg)
+        def_str = league_xg_against / tm_against if tm_against > 0 else 1.0
 
-        xgf = sum(g["xg_for"] * w[i] for i, g in enumerate(last_rev)) / w_sum if w_sum else league_xg_for
-        xga = sum(g["xg_against"] * w[i] for i, g in enumerate(last_rev)) / w_sum if w_sum else league_xg_ag
-
-        # regression to league mean (pseudo-matches)
-        n_eff = min(len(last), 60)
-        reg_w = REG_TO_MEAN_WEIGHT
-        xgf_reg = (xgf * n_eff + league_xg_for * reg_w) / (n_eff + reg_w)
-        xga_reg = (xga * n_eff + league_xg_ag  * reg_w) / (n_eff + reg_w)
-
-        # convert to log strengths relative to league mean
-        atk = math.log(max(0.05, xgf_reg) / max(0.05, league_xg_for))
-        dfn = math.log(max(0.05, league_xg_ag) / max(0.05, xga_reg))  # defend: higher is better
-
-        # clip extremes
-        atk = max(CLIP_ATTACK[0], min(CLIP_ATTACK[1], atk))
-        dfn = max(CLIP_DEF[0],    min(CLIP_DEF[1],    dfn))
-
-        strengths[tn] = {
-            "attack": atk,
-            "defence": dfn,
-            "home_adv": club_ha.get(tn, global_ha)
+        strengths[team] = {
+            "attack": round(att_str, 4),
+            "defence": round(def_str, 4),
+            "team_xg_for": round(tm_for, 3),
+            "team_xg_against": round(tm_against, 3),
+            "league_xg_for": round(league_xg_for, 3),
+            "league_xg_against": round(league_xg_against, 3),
+            "sample": min(len(last_for), len(last_against)),
         }
 
-    # write
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
-        json.dump(strengths, f, indent=2)
-    print(f"[strengths] wrote {len(strengths)} teams to {OUT_PATH}")
+    # Derive a scalar rating compatible with generate.py
+    # rating = log(attack) + log(defence); normalize to mean 0
+    raw_ratings = {
+        t: (math.log(max(1e-6, d["attack"])) + math.log(max(1e-6, d["defence"])))
+        for t, d in strengths.items()
+    }
+    mean_rating = safe_mean(list(raw_ratings.values()), 0.0)
+    for t, r in raw_ratings.items():
+        ratings[t] = round(r - mean_rating, 6)
+
+    os.makedirs(os.path.dirname(OUT_STRENGTHS), exist_ok=True)
+
+    with open(OUT_STRENGTHS, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "generated_utc": datetime.utcnow().isoformat(),
+                "season_span": raw.get("seasons"),
+                "league_baseline_xg": {"for": league_xg_for, "against": league_xg_against},
+                "max_matches_per_team": MAX_MATCHES_PER_TEAM,
+                "teams": strengths,
+            },
+            f,
+            indent=2,
+        )
+
+    with open(OUT_RATINGS, "w", encoding="utf-8") as f:
+        json.dump(ratings, f, indent=2)
+
+    print(f"[strengths] baseline xG_for={league_xg_for:.3f} xG_against={league_xg_against:.3f}")
+    print(f"[strengths] wrote strengths -> {OUT_STRENGTHS}")
+    print(f"[strengths] wrote ratings   -> {OUT_RATINGS} (teams={len(ratings)})")
+
 
 if __name__ == "__main__":
     main()
