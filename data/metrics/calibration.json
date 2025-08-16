@@ -1,0 +1,75 @@
+{
+  "generated_utc": "2025-08-16T21:31:31.635309+00:00",
+  "buckets": [
+    {
+      "lo": 0,
+      "hi": 10,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 10,
+      "hi": 20,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 20,
+      "hi": 30,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 30,
+      "hi": 40,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 40,
+      "hi": 50,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 50,
+      "hi": 60,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 60,
+      "hi": 70,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 70,
+      "hi": 80,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 80,
+      "hi": 90,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    },
+    {
+      "lo": 90,
+      "hi": 100,
+      "n": 0,
+      "avg_pred": 0.0,
+      "hit_rate": 0.0
+    }
+  ]
+}

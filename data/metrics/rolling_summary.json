@@ -1,0 +1,15 @@
+{
+  "generated_utc": "2025-08-16T21:31:31.635309+00:00",
+  "last_30_days": {
+    "n": 0,
+    "hit_rate": null,
+    "brier": null,
+    "logloss": null
+  },
+  "lifetime": {
+    "n": 0,
+    "hit_rate": null,
+    "brier": null,
+    "logloss": null
+  }
+}
