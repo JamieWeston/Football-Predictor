@@ -1,6 +1,6 @@
 # Predictions update
 
-Generated: 2025-08-16T22:27:32.372536+00:00
+Generated: 2025-08-16T22:42:14.367790+00:00
 
 ## Picks (probability-first)
 - **Nottingham Forest vs Brentford** — 1X2 / Draw (model 100%) | Alts: BTTS No 100%, O2.5 Under 100%, CorrectScore 0-0 100%
