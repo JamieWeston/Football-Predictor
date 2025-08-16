@@ -3,7 +3,10 @@ name: Predict & open PR
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 6 * * *"   # every day 06:30 UTC
+    - cron: "30 6 * * *"     # daily 06:30 UTC
+    - cron: "30 22 * * SAT"  # Sat night top-up (UTC)
+    - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
+    - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
 
 permissions:
   contents: write
@@ -29,6 +32,13 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
+      # NEW: rebuild team strengths from finished matches (simple Elo)
+      - name: Update team ratings (Elo from finished matches)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: python -m scripts.update_ratings_elo
+
       - name: Generate predictions & tips
         env:
           # Make repo root importable so the 'scripts' package resolves
@@ -36,7 +46,7 @@ jobs:
           # football-data.org token stored as a repo secret
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
           # How many days ahead to fetch SCHEDULED PL fixtures
-          FD_WINDOW_DAYS: "10"
+          FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
       - name: Create Pull Request
@@ -45,5 +55,7 @@ jobs:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update predictions and tips"
-          # reviewers: ${{ vars.REVIEWERS }}   # (optional) add back if you set this repo variable
+          commit-message: "chore: update ratings, predictions and tips"
+          # merge: true                 # <- uncomment to auto-merge
+          # merge-method: squash        # <- optional with auto-merge
+          # reviewers: ${{ vars.REVIEWERS }}   # (optional)
