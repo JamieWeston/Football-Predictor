@@ -1,6 +1,6 @@
 # Weekly predictions update
 
-Generated: 2025-08-16T20:38:29.110148+00:00
+Generated: 2025-08-16T20:50:47.258421+00:00
 
 ## Picks (probability-first)
 - **Nottingham Forest vs Brentford** — 1X2 / Home (model 50%) | Alts: BTTS Yes 57%, O2.5 Over 56%
