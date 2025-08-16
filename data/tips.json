@@ -1,8 +1,12 @@
 {
-  "generated_utc": "2025-08-16T20:58:54.713526+00:00",
+  "generated_utc": "2025-08-16T21:31:30.034913+00:00",
   "rules": {
-    "mode": "probability-first",
-    "alt_threshold": 0.55
+    "tip_policy": "most_likely_1x2",
+    "alts": [
+      "BTTS Yes",
+      "Over 2.5",
+      "Best Correct Score"
+    ]
   },
   "tips": [
     {
@@ -11,22 +15,24 @@
       "away": "Brentford",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.4995,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.5007,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5679
+          "prob": 0.0952
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5588
+          "prob": 0.0459
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.4361
         }
       ]
     },
@@ -38,20 +44,22 @@
         "market": "1X2",
         "selection": "Home"
       },
-      "model_prob": 0.5675,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.478,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5579
+          "prob": 0.1993
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5732
+          "prob": 0.1511
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "1-0",
+          "prob": 0.2545
         }
       ]
     },
@@ -63,15 +71,22 @@
         "market": "1X2",
         "selection": "Away"
       },
-      "model_prob": 0.7492,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.7312,
       "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.0
+        },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.6462
+          "prob": 0.1328
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-1",
+          "prob": 0.3741
         }
       ]
     },
@@ -81,17 +96,24 @@
       "away": "Everton",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.4057,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.8216,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5747
+          "prob": 0.0
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.0009
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.8216
         }
       ]
     },
@@ -103,15 +125,22 @@
         "market": "1X2",
         "selection": "Away"
       },
-      "model_prob": 0.6773,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.6209,
       "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.0
+        },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.6105
+          "prob": 0.0663
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-1",
+          "prob": 0.3856
         }
       ]
     },
@@ -123,20 +152,22 @@
         "market": "1X2",
         "selection": "Home"
       },
-      "model_prob": 0.885,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.7208,
       "alts": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 0.5662
+          "selection": "Yes",
+          "prob": 0.0
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.7524
+          "prob": 0.1246
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "1-0",
+          "prob": 0.377
         }
       ]
     },
@@ -146,22 +177,24 @@
       "away": "Wolves",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.6055,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.9,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5504
+          "prob": 0.0
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5841
+          "prob": 0.0001
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.9
         }
       ]
     },
@@ -173,20 +206,22 @@
         "market": "1X2",
         "selection": "Away"
       },
-      "model_prob": 0.4332,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.4727,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5736
+          "prob": 0.1329
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5507
+          "prob": 0.0972
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.3212
         }
       ]
     },
@@ -196,17 +231,24 @@
       "away": "Sunderland AFC",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.3922,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.9,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5749
+          "prob": 0.0
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.0001
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.9
         }
       ]
     },
@@ -218,15 +260,22 @@
         "market": "1X2",
         "selection": "Home"
       },
-      "model_prob": 0.7337,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.7312,
       "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.0
+        },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.6376
+          "prob": 0.1328
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "1-0",
+          "prob": 0.3741
         }
       ]
     },
@@ -236,22 +285,24 @@
       "away": "Nottingham Forest",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.427,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.4658,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5739
+          "prob": 0.1307
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5502
+          "prob": 0.0662
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.3818
         }
       ]
     },
@@ -261,17 +312,24 @@
       "away": "Brighton",
       "tip": {
         "market": "1X2",
-        "selection": "Away"
+        "selection": "Draw"
       },
-      "model_prob": 0.4084,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.4908,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5746
+          "prob": 0.0717
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.0438
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.4424
         }
       ]
     },
@@ -281,17 +339,24 @@
       "away": "Manchester United",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.6187,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.9293,
       "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.0
+        },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5883
+          "prob": 0.0
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.9293
         }
       ]
     },
@@ -303,20 +368,22 @@
         "market": "1X2",
         "selection": "Away"
       },
-      "model_prob": 0.5296,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.6035,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.564
+          "prob": 0.395
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5644
+          "prob": 0.4061
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-1",
+          "prob": 0.1684
         }
       ]
     },
@@ -328,20 +395,22 @@
         "market": "1X2",
         "selection": "Home"
       },
-      "model_prob": 0.5398,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.4326,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5625
+          "prob": 0.1828
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5666
+          "prob": 0.1245
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.2816
         }
       ]
     },
@@ -353,15 +422,22 @@
         "market": "1X2",
         "selection": "Home"
       },
-      "model_prob": 0.6477,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.5955,
       "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.0377
+        },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5986
+          "prob": 0.078
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "1-0",
+          "prob": 0.3607
         }
       ]
     },
@@ -371,17 +447,24 @@
       "away": "Brentford",
       "tip": {
         "market": "1X2",
-        "selection": "Home"
+        "selection": "Draw"
       },
-      "model_prob": 0.4038,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.6826,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5747
+          "prob": 0.0222
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.0071
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.6644
         }
       ]
     },
@@ -391,22 +474,24 @@
       "away": "Burnley",
       "tip": {
         "market": "1X2",
-        "selection": "Away"
+        "selection": "Draw"
       },
-      "model_prob": 0.4326,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 1.0,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5736
+          "prob": 0.0
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5506
+          "prob": 0.0
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 1.0
         }
       ]
     },
@@ -416,22 +501,24 @@
       "away": "Bournemouth",
       "tip": {
         "market": "1X2",
-        "selection": "Away"
+        "selection": "Draw"
       },
-      "model_prob": 0.5653,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.9,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5583
+          "prob": 0.0
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.5726
+          "prob": 0.0001
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.9
         }
       ]
     },
@@ -441,22 +528,24 @@
       "away": "Everton",
       "tip": {
         "market": "1X2",
-        "selection": "Away"
+        "selection": "Draw"
       },
-      "model_prob": 0.4884,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.8216,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5691
+          "prob": 0.0
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.557
+          "prob": 0.0009
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.8216
         }
       ]
     },
@@ -468,20 +557,22 @@
         "market": "1X2",
         "selection": "Away"
       },
-      "model_prob": 0.4744,
-      "book_odds": null,
-      "source": "most-likely",
-      "edge_pct": 0.0,
+      "model_prob": 0.5215,
       "alts": [
         {
           "market": "BTTS",
           "selection": "Yes",
-          "prob": 0.5705
+          "prob": 0.0
         },
         {
           "market": "O2.5",
           "selection": "Over",
-          "prob": 0.555
+          "prob": 0.0336
+        },
+        {
+          "market": "CorrectScore",
+          "selection": "0-0",
+          "prob": 0.4785
         }
       ]
     }
