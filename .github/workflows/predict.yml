@@ -41,23 +41,28 @@ jobs:
 
       - name: Generate predictions & tips
         env:
-          # Make repo root importable so the 'scripts' package resolves
           PYTHONPATH: ${{ github.workspace }}
-          # football-data.org token stored as a repo secret
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          # How many days ahead to fetch SCHEDULED PL fixtures
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      - name: Create Pull Request (auto-merge)
+      # 1) Create the PR and capture its number
+      - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Auto: refreshed ratings & predictions – run #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update ratings, predictions and tips"
-          labels: automated
           delete-branch: true
-          merge: true              # <-- auto-merge
-          merge-method: squash     # <-- neat commit history
-          # reviewers: ${{ vars.REVIEWERS }}   # keep commented while auto-merge is on
+          # labels: automated           # <- OPTIONAL: only if the label already exists
+
+      # 2) Immediately merge that PR (squash)
+      - name: Merge Pull Request
+        if: steps.cpr.outputs.pull-request-number
+        uses: peter-evans/merge-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
