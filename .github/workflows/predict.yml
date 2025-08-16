@@ -57,24 +57,44 @@ jobs:
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      # 4) Create PR
+      # 4) Create PR (keep going even if it errors)
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
+        continue-on-error: true
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update strengths, predictions and tips"
           labels: automation,predictions
+          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
 
-      # 5) Auto-merge the PR via REST API (squash), then delete the branch
+      # 5) Auto-merge (squash). If the PR number isn't in outputs, find it by branch.
       - name: Auto-merge PR (squash)
-        if: steps.cpr.outputs.pull-request-number
+        if: always()   # run even if previous step had a non-zero exit
         uses: actions/github-script@v7
         with:
           script: |
-            const prNumber = parseInt("${{ steps.cpr.outputs['pull-request-number'] }}", 10);
+            const branch = `auto/update-${{ github.run_id }}`;
+            // Prefer the action output if present:
+            let prNumber = parseInt("${{ steps.cpr.outputs['pull-request-number'] || '' }}", 10);
+            if (!prNumber || Number.isNaN(prNumber)) {
+              // Look up any open PR for this head branch
+              const { data } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${branch}`
+              });
+              if (data.length) prNumber = data[0].number;
+            }
+            if (!prNumber) {
+              core.info("No PR found (likely no changes). Skipping merge.");
+              return;
+            }
             core.info(`Merging PR #${prNumber} with squash...`);
             await github.rest.pulls.merge({
               owner: context.repo.owner,
@@ -84,23 +104,23 @@ jobs:
             });
 
       - name: Delete PR branch
-        if: steps.cpr.outputs.pull-request-number
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const ref = `heads/auto/update-${{ github.run_id }}`;
-            core.info(`Deleting ref ${ref}...`);
             try {
               await github.rest.git.deleteRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref
               });
+              core.info(`Deleted ${ref}`);
             } catch (e) {
-              core.warning(`Delete ref failed: ${e.message}`);
+              core.warning(`Delete ref skipped or failed: ${e.message}`);
             }
 
-      # optional: show what changed
+      # optional diagnostic
       - name: Post Checkout
         run: |
           echo "--- data dir ---"
