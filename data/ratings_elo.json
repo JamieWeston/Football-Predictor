@@ -1,0 +1,94 @@
+{
+  "generated_utc": "2025-08-16T20:38:27.817703+00:00",
+  "games_used": 386,
+  "ratings": [
+    {
+      "Team": "Arsenal",
+      "ExpPts": 1594.4
+    },
+    {
+      "Team": "Aston Villa",
+      "ExpPts": 1560.2
+    },
+    {
+      "Team": "Bournemouth",
+      "ExpPts": 1507.2
+    },
+    {
+      "Team": "Brentford",
+      "ExpPts": 1521.3
+    },
+    {
+      "Team": "Brighton",
+      "ExpPts": 1544.4
+    },
+    {
+      "Team": "Burnley",
+      "ExpPts": 1489.3
+    },
+    {
+      "Team": "Chelsea",
+      "ExpPts": 1569.0
+    },
+    {
+      "Team": "Crystal Palace",
+      "ExpPts": 1531.1
+    },
+    {
+      "Team": "Everton",
+      "ExpPts": 1513.5
+    },
+    {
+      "Team": "Fulham",
+      "ExpPts": 1505.0
+    },
+    {
+      "Team": "Ipswich Town",
+      "ExpPts": 1365.6
+    },
+    {
+      "Team": "Leicester City",
+      "ExpPts": 1377.0
+    },
+    {
+      "Team": "Liverpool",
+      "ExpPts": 1621.4
+    },
+    {
+      "Team": "Manchester City",
+      "ExpPts": 1591.6
+    },
+    {
+      "Team": "Manchester United",
+      "ExpPts": 1450.6
+    },
+    {
+      "Team": "Newcastle United",
+      "ExpPts": 1552.0
+    },
+    {
+      "Team": "Nottingham Forest",
+      "ExpPts": 1537.7
+    },
+    {
+      "Team": "Southampton",
+      "ExpPts": 1326.6
+    },
+    {
+      "Team": "Sunderland AFC",
+      "ExpPts": 1507.2
+    },
+    {
+      "Team": "Tottenham Hotspur",
+      "ExpPts": 1426.5
+    },
+    {
+      "Team": "West Ham United",
+      "ExpPts": 1451.4
+    },
+    {
+      "Team": "Wolves",
+      "ExpPts": 1457.1
+    }
+  ]
+}
