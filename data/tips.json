@@ -1,73 +1,454 @@
 {
-  "generated_utc": "2025-08-15T23:33:58.338780+00:00",
+  "generated_utc": "2025-08-16T00:08:11.889376+00:00",
   "rules": {
-    "edge_threshold_pct": 2.0
+    "mode": "probability-first",
+    "alt_threshold": 0.55
   },
   "tips": [
     {
-      "match_id": "2025-08-16_1230_AV-NEW",
+      "match_id": "2025-08-16_1130_AVL-NEW",
       "home": "Aston Villa",
       "away": "Newcastle United",
       "tip": {
-        "market": "None",
-        "selection": "No Bet"
+        "market": "1X2",
+        "selection": "Away"
       },
-      "model_prob": null,
+      "model_prob": 0.4286,
       "book_odds": null,
-      "source": "",
-      "edge_pct": 0.0
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5738
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5503
+        }
+      ]
     },
     {
-      "match_id": "2025-08-16_1500_BHA-FUL",
+      "match_id": "2025-08-16_1400_BHA-FUL",
       "home": "Brighton",
       "away": "Fulham",
       "tip": {
-        "market": "None",
-        "selection": "No Bet"
+        "market": "1X2",
+        "selection": "Home"
       },
-      "model_prob": null,
+      "model_prob": 0.5807,
       "book_odds": null,
-      "source": "",
-      "edge_pct": 0.0
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5554
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5768
+        }
+      ]
     },
     {
-      "match_id": "2025-08-16_1500_SUN-WHU",
-      "home": "Sunderland",
+      "match_id": "2025-08-16_1400_SUN-WHU",
+      "home": "Sunderland AFC",
       "away": "West Ham United",
       "tip": {
-        "market": "None",
-        "selection": "No Bet"
+        "market": "1X2",
+        "selection": "Home"
       },
-      "model_prob": null,
+      "model_prob": 0.5276,
       "book_odds": null,
-      "source": "",
-      "edge_pct": 0.0
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5643
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.564
+        }
+      ]
     },
     {
-      "match_id": "2025-08-16_1500_TOT-BUR",
+      "match_id": "2025-08-16_1400_TOT-BUR",
       "home": "Tottenham Hotspur",
       "away": "Burnley",
       "tip": {
-        "market": "None",
-        "selection": "No Bet"
+        "market": "1X2",
+        "selection": "Home"
       },
-      "model_prob": null,
+      "model_prob": 0.8115,
       "book_odds": null,
-      "source": "",
-      "edge_pct": 0.0
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.6869
+        }
+      ]
     },
     {
-      "match_id": "2025-08-16_1730_WOL-MCI",
+      "match_id": "2025-08-16_1630_WOL-MCI",
       "home": "Wolves",
       "away": "Manchester City",
       "tip": {
-        "market": "None",
-        "selection": "No Bet"
+        "market": "1X2",
+        "selection": "Away"
       },
-      "model_prob": null,
+      "model_prob": 0.8728,
       "book_odds": null,
-      "source": "",
-      "edge_pct": 0.0
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "No",
+          "prob": 0.5571
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.7397
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-17_1300_NOT-BRE",
+      "home": "Nottingham Forest",
+      "away": "Brentford",
+      "tip": {
+        "market": "1X2",
+        "selection": "Home"
+      },
+      "model_prob": 0.5217,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5651
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5628
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-17_1300_CHE-CRY",
+      "home": "Chelsea",
+      "away": "Crystal Palace",
+      "tip": {
+        "market": "1X2",
+        "selection": "Home"
+      },
+      "model_prob": 0.8011,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.6793
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-17_1530_MUN-ARS",
+      "home": "Manchester United",
+      "away": "Arsenal",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.5764,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5562
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5756
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-18_1900_LEE-EVE",
+      "home": "Leeds United",
+      "away": "Everton",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.4141,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5744
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-22_1900_WHU-CHE",
+      "home": "West Ham United",
+      "away": "Chelsea",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.634,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5936
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-23_1130_MCI-TOT",
+      "home": "Manchester City",
+      "away": "Tottenham Hotspur",
+      "tip": {
+        "market": "1X2",
+        "selection": "Home"
+      },
+      "model_prob": 0.7903,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.6718
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-23_1400_BOU-WOL",
+      "home": "Bournemouth",
+      "away": "Wolves",
+      "tip": {
+        "market": "1X2",
+        "selection": "Home"
+      },
+      "model_prob": 0.5068,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.567
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.56
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-23_1400_BRE-AVL",
+      "home": "Brentford",
+      "away": "Aston Villa",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.6054,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5504
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.584
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-23_1400_BUR-SUN",
+      "home": "Burnley",
+      "away": "Sunderland AFC",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.6536,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.6009
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-23_1630_ARS-LEE",
+      "home": "Arsenal",
+      "away": "Leeds United",
+      "tip": {
+        "market": "1X2",
+        "selection": "Home"
+      },
+      "model_prob": 0.9276,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "No",
+          "prob": 0.6053
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.805
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-24_1300_CRY-NOT",
+      "home": "Crystal Palace",
+      "away": "Nottingham Forest",
+      "tip": {
+        "market": "1X2",
+        "selection": "Home"
+      },
+      "model_prob": 0.433,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5736
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5506
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-24_1300_EVE-BHA",
+      "home": "Everton",
+      "away": "Brighton",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.458,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5719
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.553
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-24_1530_FUL-MUN",
+      "home": "Fulham",
+      "away": "Manchester United",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.5469,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5614
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5682
+        }
+      ]
+    },
+    {
+      "match_id": "2025-08-25_1900_NEW-LIV",
+      "home": "Newcastle United",
+      "away": "Liverpool",
+      "tip": {
+        "market": "1X2",
+        "selection": "Away"
+      },
+      "model_prob": 0.5469,
+      "book_odds": null,
+      "source": "most-likely",
+      "edge_pct": 0.0,
+      "alts": [
+        {
+          "market": "BTTS",
+          "selection": "Yes",
+          "prob": 0.5614
+        },
+        {
+          "market": "O2.5",
+          "selection": "Over",
+          "prob": 0.5682
+        }
+      ]
     }
   ]
 }
