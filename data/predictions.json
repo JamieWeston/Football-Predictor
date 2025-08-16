@@ -1,147 +1,27 @@
 {
-  "generated_utc": "2025-08-16T06:47:42.586869+00:00",
+  "generated_utc": "2025-08-16T20:38:29.110148+00:00",
   "predictions": [
-    {
-      "match_id": "2025-08-16_1130_AVL-NEW",
-      "home": "Aston Villa",
-      "away": "Newcastle United",
-      "kickoff_utc": "2025-08-16T11:30:00Z",
-      "probs": {
-        "home": 0.3342,
-        "draw": 0.2372,
-        "away": 0.4286
-      },
-      "btts": {
-        "yes": 0.5738,
-        "no": 0.4262
-      },
-      "totals_2_5": {
-        "over": 0.5503,
-        "under": 0.4497
-      },
-      "xg": {
-        "home": 1.333,
-        "away": 1.541
-      },
-      "model_version": "poisson_dc_v1"
-    },
-    {
-      "match_id": "2025-08-16_1400_BHA-FUL",
-      "home": "Brighton",
-      "away": "Fulham",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "probs": {
-        "home": 0.5807,
-        "draw": 0.2105,
-        "away": 0.2088
-      },
-      "btts": {
-        "yes": 0.5554,
-        "no": 0.4446
-      },
-      "totals_2_5": {
-        "over": 0.5768,
-        "under": 0.4232
-      },
-      "xg": {
-        "home": 1.918,
-        "away": 1.064
-      },
-      "model_version": "poisson_dc_v1"
-    },
-    {
-      "match_id": "2025-08-16_1400_SUN-WHU",
-      "home": "Sunderland AFC",
-      "away": "West Ham United",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "probs": {
-        "home": 0.5276,
-        "draw": 0.2231,
-        "away": 0.2492
-      },
-      "btts": {
-        "yes": 0.5643,
-        "no": 0.4357
-      },
-      "totals_2_5": {
-        "over": 0.564,
-        "under": 0.436
-      },
-      "xg": {
-        "home": 1.778,
-        "away": 1.152
-      },
-      "model_version": "poisson_dc_v1"
-    },
-    {
-      "match_id": "2025-08-16_1400_TOT-BUR",
-      "home": "Tottenham Hotspur",
-      "away": "Burnley",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "probs": {
-        "home": 0.8115,
-        "draw": 0.1198,
-        "away": 0.0687
-      },
-      "btts": {
-        "yes": 0.4798,
-        "no": 0.5202
-      },
-      "totals_2_5": {
-        "over": 0.6869,
-        "under": 0.3131
-      },
-      "xg": {
-        "home": 2.741,
-        "away": 0.718
-      },
-      "model_version": "poisson_dc_v1"
-    },
-    {
-      "match_id": "2025-08-16_1630_WOL-MCI",
-      "home": "Wolves",
-      "away": "Manchester City",
-      "kickoff_utc": "2025-08-16T16:30:00Z",
-      "probs": {
-        "home": 0.041,
-        "draw": 0.0862,
-        "away": 0.8728
-      },
-      "btts": {
-        "yes": 0.4429,
-        "no": 0.5571
-      },
-      "totals_2_5": {
-        "over": 0.7397,
-        "under": 0.2603
-      },
-      "xg": {
-        "home": 0.62,
-        "away": 3.087
-      },
-      "model_version": "poisson_dc_v1"
-    },
     {
       "match_id": "2025-08-17_1300_NOT-BRE",
       "home": "Nottingham Forest",
       "away": "Brentford",
       "kickoff_utc": "2025-08-17T13:00:00Z",
       "probs": {
-        "home": 0.5217,
-        "draw": 0.2243,
-        "away": 0.254
+        "home": 0.4995,
+        "draw": 0.2284,
+        "away": 0.2721
       },
       "btts": {
-        "yes": 0.5651,
-        "no": 0.4349
+        "yes": 0.5679,
+        "no": 0.4321
       },
       "totals_2_5": {
-        "over": 0.5628,
-        "under": 0.4372
+        "over": 0.5588,
+        "under": 0.4412
       },
       "xg": {
-        "home": 1.763,
-        "away": 1.162
+        "home": 1.708,
+        "away": 1.2
       },
       "model_version": "poisson_dc_v1"
     },
@@ -151,21 +31,21 @@
       "away": "Crystal Palace",
       "kickoff_utc": "2025-08-17T13:00:00Z",
       "probs": {
-        "home": 0.8011,
-        "draw": 0.1251,
-        "away": 0.0738
+        "home": 0.5675,
+        "draw": 0.214,
+        "away": 0.2185
       },
       "btts": {
-        "yes": 0.4851,
-        "no": 0.5149
+        "yes": 0.5579,
+        "no": 0.4421
       },
       "totals_2_5": {
-        "over": 0.6793,
-        "under": 0.3207
+        "over": 0.5732,
+        "under": 0.4268
       },
       "xg": {
-        "home": 2.691,
-        "away": 0.734
+        "home": 1.882,
+        "away": 1.086
       },
       "model_version": "poisson_dc_v1"
     },
@@ -175,21 +55,21 @@
       "away": "Arsenal",
       "kickoff_utc": "2025-08-17T15:30:00Z",
       "probs": {
-        "home": 0.212,
-        "draw": 0.2117,
-        "away": 0.5764
+        "home": 0.101,
+        "draw": 0.1498,
+        "away": 0.7492
       },
       "btts": {
-        "yes": 0.5562,
-        "no": 0.4438
+        "yes": 0.5078,
+        "no": 0.4922
       },
       "totals_2_5": {
-        "over": 0.5756,
-        "under": 0.4244
+        "over": 0.6462,
+        "under": 0.3538
       },
       "xg": {
-        "home": 1.071,
-        "away": 1.906
+        "home": 0.811,
+        "away": 2.467
       },
       "model_version": "poisson_dc_v1"
     },
@@ -199,21 +79,21 @@
       "away": "Everton",
       "kickoff_utc": "2025-08-18T19:00:00Z",
       "probs": {
-        "home": 0.3478,
-        "draw": 0.2381,
-        "away": 0.4141
+        "home": 0.4057,
+        "draw": 0.2385,
+        "away": 0.3558
       },
       "btts": {
-        "yes": 0.5744,
-        "no": 0.4256
+        "yes": 0.5747,
+        "no": 0.4253
       },
       "totals_2_5": {
-        "over": 0.5495,
-        "under": 0.4505
+        "over": 0.5491,
+        "under": 0.4509
       },
       "xg": {
-        "home": 1.362,
-        "away": 1.508
+        "home": 1.489,
+        "away": 1.38
       },
       "model_version": "poisson_dc_v1"
     },
@@ -223,21 +103,21 @@
       "away": "Chelsea",
       "kickoff_utc": "2025-08-22T19:00:00Z",
       "probs": {
-        "home": 0.1714,
-        "draw": 0.1946,
-        "away": 0.634
+        "home": 0.1433,
+        "draw": 0.1794,
+        "away": 0.6773
       },
       "btts": {
-        "yes": 0.5438,
-        "no": 0.4562
+        "yes": 0.5322,
+        "no": 0.4678
       },
       "totals_2_5": {
-        "over": 0.5936,
-        "under": 0.4064
+        "over": 0.6105,
+        "under": 0.3895
       },
       "xg": {
-        "home": 0.982,
-        "away": 2.071
+        "home": 0.916,
+        "away": 2.208
       },
       "model_version": "poisson_dc_v1"
     },
@@ -247,21 +127,21 @@
       "away": "Tottenham Hotspur",
       "kickoff_utc": "2025-08-23T11:30:00Z",
       "probs": {
-        "home": 0.7903,
-        "draw": 0.1305,
-        "away": 0.0793
+        "home": 0.885,
+        "draw": 0.079,
+        "away": 0.0359
       },
       "btts": {
-        "yes": 0.4902,
-        "no": 0.5098
+        "yes": 0.4338,
+        "no": 0.5662
       },
       "totals_2_5": {
-        "over": 0.6718,
-        "under": 0.3282
+        "over": 0.7524,
+        "under": 0.2476
       },
       "xg": {
-        "home": 2.641,
-        "away": 0.75
+        "home": 3.169,
+        "away": 0.599
       },
       "model_version": "poisson_dc_v1"
     },
@@ -271,21 +151,21 @@
       "away": "Wolves",
       "kickoff_utc": "2025-08-23T14:00:00Z",
       "probs": {
-        "home": 0.5068,
-        "draw": 0.2271,
-        "away": 0.266
+        "home": 0.6055,
+        "draw": 0.2035,
+        "away": 0.191
       },
       "btts": {
-        "yes": 0.567,
-        "no": 0.433
+        "yes": 0.5504,
+        "no": 0.4496
       },
       "totals_2_5": {
-        "over": 0.56,
-        "under": 0.44
+        "over": 0.5841,
+        "under": 0.4159
       },
       "xg": {
-        "home": 1.726,
-        "away": 1.188
+        "home": 1.987,
+        "away": 1.025
       },
       "model_version": "poisson_dc_v1"
     },
@@ -295,21 +175,21 @@
       "away": "Aston Villa",
       "kickoff_utc": "2025-08-23T14:00:00Z",
       "probs": {
-        "home": 0.191,
-        "draw": 0.2035,
-        "away": 0.6054
+        "home": 0.33,
+        "draw": 0.2368,
+        "away": 0.4332
       },
       "btts": {
-        "yes": 0.5504,
-        "no": 0.4496
+        "yes": 0.5736,
+        "no": 0.4264
       },
       "totals_2_5": {
-        "over": 0.584,
-        "under": 0.416
+        "over": 0.5507,
+        "under": 0.4493
       },
       "xg": {
-        "home": 1.025,
-        "away": 1.987
+        "home": 1.324,
+        "away": 1.552
       },
       "model_version": "poisson_dc_v1"
     },
@@ -319,21 +199,21 @@
       "away": "Sunderland AFC",
       "kickoff_utc": "2025-08-23T14:00:00Z",
       "probs": {
-        "home": 0.1584,
-        "draw": 0.188,
-        "away": 0.6536
+        "home": 0.3922,
+        "draw": 0.2389,
+        "away": 0.3689
       },
       "btts": {
-        "yes": 0.5388,
-        "no": 0.4612
+        "yes": 0.5749,
+        "no": 0.4251
       },
       "totals_2_5": {
-        "over": 0.6009,
-        "under": 0.3991
+        "over": 0.5487,
+        "under": 0.4513
       },
       "xg": {
-        "home": 0.952,
-        "away": 2.131
+        "home": 1.459,
+        "away": 1.408
       },
       "model_version": "poisson_dc_v1"
     },
@@ -343,21 +223,21 @@
       "away": "Leeds United",
       "kickoff_utc": "2025-08-23T16:30:00Z",
       "probs": {
-        "home": 0.9276,
-        "draw": 0.0525,
-        "away": 0.0199
+        "home": 0.7337,
+        "draw": 0.1566,
+        "away": 0.1097
       },
       "btts": {
-        "yes": 0.3947,
-        "no": 0.6053
+        "yes": 0.5136,
+        "no": 0.4864
       },
       "totals_2_5": {
-        "over": 0.805,
-        "under": 0.195
+        "over": 0.6376,
+        "under": 0.3624
       },
       "xg": {
-        "home": 3.521,
-        "away": 0.518
+        "home": 2.407,
+        "away": 0.833
       },
       "model_version": "poisson_dc_v1"
     },
@@ -367,9 +247,177 @@
       "away": "Nottingham Forest",
       "kickoff_utc": "2025-08-24T13:00:00Z",
       "probs": {
-        "home": 0.433,
-        "draw": 0.2368,
-        "away": 0.3302
+        "home": 0.427,
+        "draw": 0.2373,
+        "away": 0.3357
+      },
+      "btts": {
+        "yes": 0.5739,
+        "no": 0.4261
+      },
+      "totals_2_5": {
+        "over": 0.5502,
+        "under": 0.4498
+      },
+      "xg": {
+        "home": 1.537,
+        "away": 1.336
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-24_1300_EVE-BHA",
+      "home": "Everton",
+      "away": "Brighton",
+      "kickoff_utc": "2025-08-24T13:00:00Z",
+      "probs": {
+        "home": 0.3532,
+        "draw": 0.2384,
+        "away": 0.4084
+      },
+      "btts": {
+        "yes": 0.5746,
+        "no": 0.4254
+      },
+      "totals_2_5": {
+        "over": 0.5492,
+        "under": 0.4508
+      },
+      "xg": {
+        "home": 1.374,
+        "away": 1.495
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-24_1530_FUL-MUN",
+      "home": "Fulham",
+      "away": "Manchester United",
+      "kickoff_utc": "2025-08-24T15:30:00Z",
+      "probs": {
+        "home": 0.6187,
+        "draw": 0.1995,
+        "away": 0.1818
+      },
+      "btts": {
+        "yes": 0.5474,
+        "no": 0.4526
+      },
+      "totals_2_5": {
+        "over": 0.5883,
+        "under": 0.4117
+      },
+      "xg": {
+        "home": 2.026,
+        "away": 1.005
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-25_1900_NEW-LIV",
+      "home": "Newcastle United",
+      "away": "Liverpool",
+      "kickoff_utc": "2025-08-25T19:00:00Z",
+      "probs": {
+        "home": 0.2477,
+        "draw": 0.2227,
+        "away": 0.5296
+      },
+      "btts": {
+        "yes": 0.564,
+        "no": 0.436
+      },
+      "totals_2_5": {
+        "over": 0.5644,
+        "under": 0.4356
+      },
+      "xg": {
+        "home": 1.148,
+        "away": 1.783
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-29_1900_AVL-CRY",
+      "home": "Aston Villa",
+      "away": "Crystal Palace",
+      "kickoff_utc": "2025-08-29T19:00:00Z",
+      "probs": {
+        "home": 0.5398,
+        "draw": 0.2205,
+        "away": 0.2397
+      },
+      "btts": {
+        "yes": 0.5625,
+        "no": 0.4375
+      },
+      "totals_2_5": {
+        "over": 0.5666,
+        "under": 0.4334
+      },
+      "xg": {
+        "home": 1.809,
+        "away": 1.131
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-30_1130_CHE-FUL",
+      "home": "Chelsea",
+      "away": "Fulham",
+      "kickoff_utc": "2025-08-30T11:30:00Z",
+      "probs": {
+        "home": 0.6477,
+        "draw": 0.19,
+        "away": 0.1623
+      },
+      "btts": {
+        "yes": 0.5403,
+        "no": 0.4597
+      },
+      "totals_2_5": {
+        "over": 0.5986,
+        "under": 0.4014
+      },
+      "xg": {
+        "home": 2.113,
+        "away": 0.961
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-30_1400_SUN-BRE",
+      "home": "Sunderland AFC",
+      "away": "Brentford",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
+      "probs": {
+        "home": 0.4038,
+        "draw": 0.2386,
+        "away": 0.3576
+      },
+      "btts": {
+        "yes": 0.5747,
+        "no": 0.4253
+      },
+      "totals_2_5": {
+        "over": 0.549,
+        "under": 0.451
+      },
+      "xg": {
+        "home": 1.485,
+        "away": 1.384
+      },
+      "model_version": "poisson_dc_v1"
+    },
+    {
+      "match_id": "2025-08-30_1400_MUN-BUR",
+      "home": "Manchester United",
+      "away": "Burnley",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
+      "probs": {
+        "home": 0.3305,
+        "draw": 0.2369,
+        "away": 0.4326
       },
       "btts": {
         "yes": 0.5736,
@@ -380,80 +428,80 @@
         "under": 0.4494
       },
       "xg": {
-        "home": 1.551,
-        "away": 1.324
+        "home": 1.325,
+        "away": 1.55
       },
       "model_version": "poisson_dc_v1"
     },
     {
-      "match_id": "2025-08-24_1300_EVE-BHA",
-      "home": "Everton",
-      "away": "Brighton",
-      "kickoff_utc": "2025-08-24T13:00:00Z",
+      "match_id": "2025-08-30_1400_TOT-BOU",
+      "home": "Tottenham Hotspur",
+      "away": "Bournemouth",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
       "probs": {
-        "home": 0.3076,
-        "draw": 0.2344,
-        "away": 0.458
+        "home": 0.2202,
+        "draw": 0.2145,
+        "away": 0.5653
       },
       "btts": {
-        "yes": 0.5719,
-        "no": 0.4281
+        "yes": 0.5583,
+        "no": 0.4417
       },
       "totals_2_5": {
-        "over": 0.553,
-        "under": 0.447
+        "over": 0.5726,
+        "under": 0.4274
       },
       "xg": {
-        "home": 1.276,
-        "away": 1.609
+        "home": 1.089,
+        "away": 1.876
       },
       "model_version": "poisson_dc_v1"
     },
     {
-      "match_id": "2025-08-24_1530_FUL-MUN",
-      "home": "Fulham",
-      "away": "Manchester United",
-      "kickoff_utc": "2025-08-24T15:30:00Z",
+      "match_id": "2025-08-30_1400_WOL-EVE",
+      "home": "Wolves",
+      "away": "Everton",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
       "probs": {
-        "home": 0.2341,
-        "draw": 0.2189,
-        "away": 0.5469
+        "home": 0.2814,
+        "draw": 0.2303,
+        "away": 0.4884
       },
       "btts": {
-        "yes": 0.5614,
-        "no": 0.4386
+        "yes": 0.5691,
+        "no": 0.4309
       },
       "totals_2_5": {
-        "over": 0.5682,
-        "under": 0.4318
+        "over": 0.557,
+        "under": 0.443
       },
       "xg": {
-        "home": 1.119,
-        "away": 1.828
+        "home": 1.22,
+        "away": 1.681
       },
       "model_version": "poisson_dc_v1"
     },
     {
-      "match_id": "2025-08-25_1900_NEW-LIV",
-      "home": "Newcastle United",
-      "away": "Liverpool",
-      "kickoff_utc": "2025-08-25T19:00:00Z",
+      "match_id": "2025-08-30_1630_LEE-NEW",
+      "home": "Leeds United",
+      "away": "Newcastle United",
+      "kickoff_utc": "2025-08-30T16:30:00Z",
       "probs": {
-        "home": 0.2341,
-        "draw": 0.2189,
-        "away": 0.5469
+        "home": 0.2933,
+        "draw": 0.2323,
+        "away": 0.4744
       },
       "btts": {
-        "yes": 0.5614,
-        "no": 0.4386
+        "yes": 0.5705,
+        "no": 0.4295
       },
       "totals_2_5": {
-        "over": 0.5682,
-        "under": 0.4318
+        "over": 0.555,
+        "under": 0.445
       },
       "xg": {
-        "home": 1.119,
-        "away": 1.828
+        "home": 1.246,
+        "away": 1.648
       },
       "model_version": "poisson_dc_v1"
     }
