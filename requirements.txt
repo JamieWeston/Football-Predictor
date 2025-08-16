@@ -1,2 +1,5 @@
 numpy
+pandas
+aiohttp
+understat
 requests
