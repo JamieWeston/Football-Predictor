@@ -1,11 +1,12 @@
-name: Predict & open PR
+name: Predict & open PR (auto-merge)
 
 on:
   workflow_dispatch:
   schedule:
     - cron: "30 6 * * *"     # daily 06:30 UTC
-    - cron: "30 22 * * SAT"  # Sat night
-    - cron: "30 8 * * MON"   # Mon morning
+    - cron: "30 22 * * SAT"  # Sat night top-up (UTC)
+    - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
+    - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
 
 permissions:
   contents: write
@@ -14,7 +15,7 @@ permissions:
 jobs:
   predict:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     concurrency:
       group: predict
       cancel-in-progress: true
@@ -31,19 +32,22 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # 1) Pull Understat xG (last 3 seasons)
+      # 1) Fetch rolling team match xG from Understat
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
+          # Optional overrides:
+          # US_SEASONS: "2023,2024,2025"
+          # US_SLEEP_MS: "300"
         run: python -m scripts.fetch_understat_xg
 
-      # 2) Compute rolling strengths
+      # 2) Compute team strengths from Understat rows
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # 3) Generate predictions (fixtures come from your existing source)
+      # 3) Generate predictions with strengths
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -51,13 +55,22 @@ jobs:
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
+      # 4) Create PR and auto-merge it back into main
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update xG strengths, predictions and tips"
-          # merge: true            # enable if you want auto-merge
-          # merge-method: squash
+          commit-message: "chore: update strengths, predictions and tips"
+          delete-branch: true
+          merge: true
+          merge-method: squash
 
+      # (optional) show file tree in logs
+      - name: Post Checkout
+        run: |
+          echo "--- data dir ---"
+          ls -la data || true
+          echo "--- reports dir ---"
+          ls -la reports || true
