@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # helps auto-merge if history is needed
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -68,17 +68,39 @@ jobs:
           commit-message: "chore: update strengths, predictions and tips"
           labels: automation,predictions
 
-      # 5) Auto-merge the PR (squash) and delete the temporary branch
-      - name: Merge Pull Request (squash)
+      # 5) Auto-merge the PR via REST API (squash), then delete the branch
+      - name: Auto-merge PR (squash)
         if: steps.cpr.outputs.pull-request-number
-        uses: peter-evans/merge-pull-request@v2
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
-          method: squash
-          delete-branch: true
+          script: |
+            const prNumber = parseInt("${{ steps.cpr.outputs['pull-request-number'] }}", 10);
+            core.info(`Merging PR #${prNumber} with squash...`);
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              merge_method: "squash"
+            });
 
-      # (optional) show file tree in logs
+      - name: Delete PR branch
+        if: steps.cpr.outputs.pull-request-number
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const ref = `heads/auto/update-${{ github.run_id }}`;
+            core.info(`Deleting ref ${ref}...`);
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref
+              });
+            } catch (e) {
+              core.warning(`Delete ref failed: ${e.message}`);
+            }
+
+      # optional: show what changed
       - name: Post Checkout
         run: |
           echo "--- data dir ---"
