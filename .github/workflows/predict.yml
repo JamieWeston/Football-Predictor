@@ -1,4 +1,4 @@
-name: Predict & open PR
+name: Predict & open PR (auto-merge)
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # NEW: rebuild team strengths from finished matches (simple Elo)
+      # Rebuild team strengths from finished matches (simple Elo)
       - name: Update team ratings (Elo from finished matches)
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -49,13 +49,15 @@ jobs:
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      - name: Create Pull Request
+      - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
-          title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
+          title: "Auto: refreshed ratings & predictions – run #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update ratings, predictions and tips"
-          # merge: true                 # <- uncomment to auto-merge
-          # merge-method: squash        # <- optional with auto-merge
-          # reviewers: ${{ vars.REVIEWERS }}   # (optional)
+          labels: automated
+          delete-branch: true
+          merge: true              # <-- auto-merge
+          merge-method: squash     # <-- neat commit history
+          # reviewers: ${{ vars.REVIEWERS }}   # keep commented while auto-merge is on
