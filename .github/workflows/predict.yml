@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # helps auto-merge if history is needed
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -55,17 +57,26 @@ jobs:
           FD_WINDOW_DAYS: "14"
         run: python -m scripts.generate
 
-      # 4) Create PR and auto-merge it back into main
+      # 4) Create PR
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
           commit-message: "chore: update strengths, predictions and tips"
+          labels: automation,predictions
+
+      # 5) Auto-merge the PR (squash) and delete the temporary branch
+      - name: Merge Pull Request (squash)
+        if: steps.cpr.outputs.pull-request-number
+        uses: peter-evans/merge-pull-request@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request: ${{ steps.cpr.outputs.pull-request-number }}
+          method: squash
           delete-branch: true
-          merge: true
-          merge-method: squash
 
       # (optional) show file tree in logs
       - name: Post Checkout
