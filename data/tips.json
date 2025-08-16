@@ -1,12 +1,7 @@
 {
-  "generated_utc": "2025-08-16T22:42:14.367790+00:00",
+  "generated_utc": "2025-08-16T22:47:09.536675+00:00",
   "rules": {
-    "tip_policy": "most_likely_1x2",
-    "alts": [
-      "BTTS",
-      "O2.5",
-      "CorrectScore"
-    ]
+    "note": "Simple best 1X2 pick by model probability; alts show highest BTTS/O2.5 edges."
   },
   "tips": [
     {
@@ -15,24 +10,19 @@
       "away": "Brentford",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -42,24 +32,19 @@
       "away": "Crystal Palace",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -69,24 +54,19 @@
       "away": "Arsenal",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -96,24 +76,19 @@
       "away": "Everton",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -123,24 +98,19 @@
       "away": "Chelsea",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -150,24 +120,19 @@
       "away": "Tottenham Hotspur",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -177,24 +142,19 @@
       "away": "Wolves",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -204,24 +164,19 @@
       "away": "Aston Villa",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -231,24 +186,19 @@
       "away": "Sunderland AFC",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -258,24 +208,19 @@
       "away": "Leeds United",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -285,24 +230,19 @@
       "away": "Nottingham Forest",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -312,24 +252,19 @@
       "away": "Brighton",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -339,24 +274,19 @@
       "away": "Manchester United",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -366,24 +296,19 @@
       "away": "Liverpool",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -393,24 +318,19 @@
       "away": "Crystal Palace",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -420,24 +340,19 @@
       "away": "Fulham",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -447,24 +362,19 @@
       "away": "Brentford",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -474,24 +384,19 @@
       "away": "Burnley",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -501,24 +406,19 @@
       "away": "Bournemouth",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -528,24 +428,19 @@
       "away": "Everton",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     },
@@ -555,24 +450,19 @@
       "away": "Newcastle United",
       "tip": {
         "market": "1X2",
-        "selection": "Draw"
+        "selection": "Home"
       },
-      "model_prob": 1.0,
-      "alts": [
+      "model_prob": 0.4312,
+      "alternatives": [
         {
           "market": "BTTS",
-          "selection": "No",
-          "prob": 1.0
+          "selection": "Yes",
+          "prob": 0.5738
         },
         {
           "market": "O2.5",
-          "selection": "Under",
-          "prob": 1.0
-        },
-        {
-          "market": "CorrectScore",
-          "selection": "0-0",
-          "prob": 1.0
+          "selection": "Over",
+          "prob": 0.5305
         }
       ]
     }
