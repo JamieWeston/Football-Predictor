@@ -32,21 +32,33 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # Build rolling strengths from recent results (decay)
-      - name: Build rolling strengths from results
+      - name: Build rolling strengths (optional, safe if present)
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-        run: python -m scripts.strengths_xg
+        run: |
+          python - <<'PY'
+          try:
+              import scripts.strengths_xg as s
+              s.build_strengths()
+          except Exception as e:
+              print("[strengths] skipped:", e)
+          PY
 
-      # Optional: keep Elo CSV too (fallback / sanity)
-      - name: Update team ratings (Elo from finished matches)
+      - name: Update team ratings (Elo fallback, optional)
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-        run: python -m scripts.update_ratings_elo
+        run: |
+          python - <<'PY'
+          try:
+              import scripts.update_ratings_elo as u
+              u.main()
+          except Exception as e:
+              print("[elo] skipped:", e)
+          PY
 
-      - name: Generate predictions & tips (with scorelines/cards/corners)
+      - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
@@ -64,7 +76,6 @@ jobs:
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
         run: python -m scripts.evaluate_backtest
 
-      # Create PR with updated data, then auto-merge via GitHub API
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v6
