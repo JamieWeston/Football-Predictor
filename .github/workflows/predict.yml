@@ -15,7 +15,7 @@ permissions:
 jobs:
   predict:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     concurrency:
       group: predict
       cancel-in-progress: true
@@ -32,59 +32,68 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # 1) Fetch rolling team match xG from Understat (async)
+      # Optional: pull rolling match xG from Understat
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
-          # Optional overrides if you ever need them:
-          # US_SEASONS: "2023,2024,2025"
-          # US_SLEEP_MS: "250"
-        run: python -m scripts.fetch_understat_xg
+          # Adjust seasons/rate limiting if needed
+          US_SEASONS: "2023,2024,2025"
+          US_SLEEP_MS: "300"
+        run: python -u -m scripts.fetch_understat_xg
 
-      # 2) Compute team strengths from Understat rows
+      # Optional: compute team strengths from Understat rows
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
-        run: python -m scripts.compute_team_strengths
+        run: python -u -m scripts.compute_team_strengths
 
-      # 3) Generate predictions & tips using team strengths
+      # ---- UPDATED BLOCK (unbuffered logs + statuses) ----
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_WINDOW_DAYS: "14"
-        run: python -m scripts.generate
+          FD_WINDOW_DAYS: "14"            # bump to 21 while debugging if needed
+          FD_STATUSES: "SCHEDULED,TIMED"  # only future fixtures
+          PYTHONUNBUFFERED: "1"           # stream logs immediately
+        run: python -u -m scripts.generate
+      # ----------------------------------------------------
 
-      # 4) NEW: stop committing Python caches/noise (will be included in the PR)
-      - name: Untrack Python caches before PR
-        shell: bash
+      # Tiny guard so we notice empty output early
+      - name: Smoke test – fail if no predictions written
         run: |
-          # Untrack any cached bytecode and __pycache__ folders if they slipped in
+          python - <<'PY'
+          import json, sys, pathlib
+          p = pathlib.Path("data/predictions.json")
+          if not p.exists():
+              print("[smoke] data/predictions.json not found")
+              sys.exit(1)
+          data = json.loads(p.read_text())
+          n = len(data.get("predictions", []))
+          print(f"[smoke] predictions count: {n}")
+          if n == 0:
+              sys.exit(1)
+          PY
+
+      # Keep git clean in the PR
+      - name: Untrack Python caches before PR
+        run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
-          git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo **/*.pyd || true
+          git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-          # Stage deletions so the PR contains the cleanup
-          git add -A
-
-          # Optional: show what changed in the logs
-          git status -s || true
-
-      # 5) Create PR and auto-merge it back into main
+      # Auto-PR and auto-merge back to main
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update strengths, predictions and tips (and remove caches)"
+          commit-message: "chore: update strengths, predictions and tips"
           delete-branch: true
           merge: true
           merge-method: squash
 
-      # (optional) show file tree in logs
+      # Just to help you verify artifacts in logs
       - name: Post Checkout
         run: |
-          echo "--- data dir ---"
-          ls -la data || true
-          echo "--- reports dir ---"
-          ls -la reports || true
+          echo "--- data dir ---"; ls -la data || true
+          echo "--- reports dir ---"; ls -la reports || true
