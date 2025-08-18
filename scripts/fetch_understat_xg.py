@@ -1,110 +1,142 @@
 # scripts/fetch_understat_xg.py
+"""
+Fetch Understat league matches (with xG/goals) for one or more seasons and
+write them to data/understat_matches.csv.
+
+Env vars:
+- US_LEAGUE   : short league code (e.g., 'epl'). Case-insensitive.
+- US_SEASONS  : comma-separated seasons, e.g. '2023,2024,2025'
+- US_SLEEP_MS : optional polite delay between seasons (default 300ms)
+"""
+
+from __future__ import annotations
 import os
-import csv
-import asyncio
-from datetime import datetime
-from typing import List
+import re
+import json
+import time
+from pathlib import Path
+from typing import Iterable, List, Dict, Any
+import requests
+import pandas as pd
 
-import aiohttp
-from understat import Understat
 
-OUT_PATH = "data/understat_matches.csv"
+def _env(name: str, default: str) -> str:
+    v = os.environ.get(name)
+    return v.strip() if v else default
 
-def _parse_seasons(env_val: str) -> List[int]:
-    seasons = []
-    if env_val:
-        for part in env_val.split(","):
-            part = part.strip()
-            if part.isdigit():
-                seasons.append(int(part))
-    return seasons
 
-async def _fetch(seasons: List[int], league: str, sleep_ms: int = 300) -> int:
+def _parse_matches_from_html(html: str) -> List[Dict[str, Any]]:
     """
-    Fetch league matches from Understat for the requested seasons and write a CSV.
+    Understat embeds JSON into a JS variable:
+      var matchesData = JSON.parse('...escaped...');
+    or sometimes:
+      var matchesData = [...];
 
-    Returns number of rows written.
+    This extracts and returns a list of dicts for matches.
     """
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
+    # Pattern 1: JSON.parse('...') form
+    m = re.search(r"var\s+matchesData\s*=\s*JSON\.parse\('([^']+)'\)", html)
+    if m:
+        raw = m.group(1)
+        # Understat escapes quotes; decode twice: JS-string -> JSON
+        unescaped = bytes(raw, "utf-8").decode("unicode_escape")
+        return json.loads(unescaped)
 
-    # Use a regular browser UA to reduce chance of 403
+    # Pattern 2: direct JSON array
+    m = re.search(r"var\s+matchesData\s*=\s*(\[[\s\S]*?\]);", html)
+    if m:
+        return json.loads(m.group(1))
+
+    raise RuntimeError("Could not locate matchesData in page")
+
+
+def fetch_league_season(league_code: str, season: int) -> pd.DataFrame:
+    league_path = league_code.upper()  # Understat expects 'EPL', 'La_liga', etc.
+    url = f"https://understat.com/league/{league_path}/{season}"
+
     headers = {
-        "User-Agent":
+        "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/126.0 Safari/537.36"
+            "Chrome/122.0 Safari/537.36"
+        )
     }
+    resp = requests.get(url, headers=headers, timeout=30)
+    resp.raise_for_status()
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        understat = Understat(session)
+    matches = _parse_matches_from_html(resp.text)
+    rows = []
+    for m in matches:
+        # Typical structure:
+        # {
+        #   "id":"XXXXX",
+        #   "datetime":"2024-08-17 14:00:00",
+        #   "isResult":true,
+        #   "h":{"id":"89","title":"Manchester United","short_title":"Man United"},
+        #   "a":{"id":"80","title":"Aston Villa","short_title":"Aston Villa"},
+        #   "goals":{"h":2,"a":1},
+        #   "xG":{"h":1.54,"a":1.12},
+        #   ...
+        # }
+        # Not all games have results/xG yet (future fixtures). Keep rows that have xG.
+        try:
+            home = m["h"]["title"]
+            away = m["a"]["title"]
+            # xG may be strings; coerce to float
+            xg_h = float(m["xG"]["h"]) if m.get("xG") else None
+            xg_a = float(m["xG"]["a"]) if m.get("xG") else None
+            g_h = int(m["goals"]["h"]) if m.get("goals") else None
+            g_a = int(m["goals"]["a"]) if m.get("goals") else None
+            dt = m.get("datetime")
 
-        total_rows = 0
-        with open(OUT_PATH, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow([
-                "season", "date", "home", "away",
-                "home_goals", "away_goals",
-                "home_xg", "away_xg"
-            ])
+            # Only keep rows where xG is present (played matches)
+            if xg_h is not None and xg_a is not None:
+                rows.append(
+                    {
+                        "season": season,
+                        "date": dt,
+                        "home": home,
+                        "away": away,
+                        "goals_h": g_h,
+                        "goals_a": g_a,
+                        "xg_h": xg_h,
+                        "xg_a": xg_a,
+                    }
+                )
+        except Exception:
+            # be permissive; skip malformed rows rather than failing the run
+            continue
 
-            for season in seasons:
-                try:
-                    # understat expects lower-case league code like "epl"
-                    matches = await understat.get_league_matches(league, season)
-                except Exception as e:
-                    print(f"[understat] ERROR fetching {league} {season}: {e}")
-                    continue
+    return pd.DataFrame(rows)
 
-                rows_this_season = 0
-                for m in matches:
-                    # Only take finished matches (have result)
-                    if not (m.get("goals") and m["goals"].get("h") is not None):
-                        continue
-
-                    try:
-                        date_str = m["datetime"]
-                        # understat returns iso string; normalize to date
-                        date = datetime.fromisoformat(date_str.replace("Z", "+00:00")).date()
-
-                        home = m["h"]["title"]
-                        away = m["a"]["title"]
-                        hg = int(m["goals"]["h"])
-                        ag = int(m["goals"]["a"])
-
-                        # Understat xG are in "xG" arrays (list of shots). Sum them if present.
-                        hxg = float(m.get("xg", {}).get("h", 0.0)) if isinstance(m.get("xg", {}).get("h", 0.0), (int, float)) else 0.0
-                        axg = float(m.get("xg", {}).get("a", 0.0)) if isinstance(m.get("xg", {}).get("a", 0.0), (int, float)) else 0.0
-
-                        writer.writerow([season, date.isoformat(), home, away, hg, ag, round(hxg, 3), round(axg, 3)])
-                        rows_this_season += 1
-                    except Exception as e:
-                        # Skip any odd row rather than failing the whole season
-                        print(f"[understat] warn skipping row in {season}: {e}")
-
-                print(f"[understat] season {season}: wrote {rows_this_season} rows")
-                total_rows += rows_this_season
-
-                # be polite
-                await asyncio.sleep(max(sleep_ms, 0) / 1000)
-
-    print(f"[understat] wrote total {total_rows} rows to {OUT_PATH}")
-    return total_rows
 
 def main():
-    seasons_env = os.getenv("US_SEASONS", "")
-    seasons = _parse_seasons(seasons_env)
-    if not seasons:
-        # default to last 2 seasons if nothing provided
-        y = datetime.utcnow().year
-        seasons = [y - 1, y]
+    league = _env("US_LEAGUE", "epl")          # case-insensitive
+    seasons_s = _env("US_SEASONS", "2024,2025")
+    sleep_ms = int(_env("US_SLEEP_MS", "300"))
 
-    league = os.getenv("US_LEAGUE", "epl").strip().lower()  # <— IMPORTANT
-    sleep_ms = int(os.getenv("US_SLEEP_MS", "300"))
+    seasons: Iterable[int] = [int(s.strip()) for s in seasons_s.split(",") if s.strip()]
 
-    print(f"[understat] league={league} seasons={seasons} sleep_ms={sleep_ms}")
-    rows = asyncio.get_event_loop().run_until_complete(_fetch(seasons, league, sleep_ms))
-    if rows == 0:
-        raise SystemExit("[understat] ERROR: 0 rows written; check league code (use lower-case like 'epl') or network")
+    all_frames: List[pd.DataFrame] = []
+    for s in seasons:
+        try:
+            df = fetch_league_season(league, s)
+            print(f"[understat] season {s}: rows={len(df)}")
+            all_frames.append(df)
+        except Exception as e:
+            print(f"[understat] WARN: failed to parse season {s}: {e}")
+        time.sleep(sleep_ms / 1000.0)
+
+    if not all_frames:
+        raise SystemExit("[understat] ERROR: collected 0 rows across all seasons")
+
+    out = pd.concat(all_frames, ignore_index=True)
+    out_dir = Path("data")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "understat_matches.csv"
+    out.to_csv(out_path, index=False)
+    print(f"[understat] wrote total {len(out)} rows to {out_path}")
+
 
 if __name__ == "__main__":
     main()
