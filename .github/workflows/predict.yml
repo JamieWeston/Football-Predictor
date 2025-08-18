@@ -29,45 +29,44 @@ jobs:
         with:
           python-version: "3.11"
 
-      # ✅ NEW: upgrade pip/setuptools/wheel BEFORE installing requirements
       - name: Upgrade pip
         run: python -m pip install --upgrade pip setuptools wheel
 
       - name: Install deps
-        run: pip install -r requirements.txt
+        run: pip install --no-cache-dir -r requirements.txt
 
-      # Pull rolling PL match xG/xGA from Understat and save CSV
+      # 1) Fetch rolling team xG from Understat
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
-          # Optional overrides:
-          # US_SEASONS: "2023,2024,2025"  # comma-separated Understat seasons
-          # US_SLEEP_MS: "300"            # be polite to their API
+          US_LEAGUE: "EPL"       # internal label you use
+          US_SEASONS: "2023,2024,2025"
+          US_SLEEP_MS: "300"
         run: python -m scripts.fetch_understat_xg
 
-      # Convert the raw Understat rows into per-team attack/defence strengths
+      # 2) Compute team strengths from Understat rows
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # Generate predictions JSON for the next 14 days
+      # 3) Generate predictions with strengths
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_WINDOW_DAYS: "14"            # or bump to 21 while debugging
-          FD_STATUSES: "SCHEDULED,TIMED"  # ensure we only take future fixtures
-          PYTHONUNBUFFERED: "1"           # force immediate log flush
+          FD_WINDOW_DAYS: "14"            # you can bump while debugging
+          FD_STATUSES: "SCHEDULED,TIMED"  # future fixtures only
+          PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # Keep PRs clean — don’t track Python caches / bytecode
+      # stop committing caches
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-      # Open a PR with the new data and auto-merge it back to main (squash)
+      # 4) Create PR and auto-merge it back into main
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
@@ -79,10 +78,7 @@ jobs:
           merge: true
           merge-method: squash
 
-      # (optional) quick directory listing in logs for debugging
       - name: Post Checkout
         run: |
-          echo "--- data dir ---"
-          ls -la data || true
-          echo "--- reports dir ---"
-          ls -la reports || true
+          echo "--- data dir ---";    ls -la data || true
+          echo "--- reports dir ---"; ls -la reports || true
