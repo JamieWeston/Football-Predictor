@@ -3,10 +3,10 @@ name: Predict & open PR (auto-merge)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 6 * * *"
-    - cron: "30 22 * * SAT"
-    - cron: "30 22 * * SUN"
-    - cron: "30 8 * * MON"
+    - cron: "30 6 * * *"     # daily 06:30 UTC
+    - cron: "30 22 * * SAT"  # Sat night top-up (UTC)
+    - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
+    - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ permissions:
 jobs:
   predict:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     concurrency:
       group: predict
       cancel-in-progress: true
@@ -35,59 +35,48 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # -------- OPTIONAL: Try Understat (do not fail the job) --------
-      - name: Fetch Understat xG (best-effort)
-        continue-on-error: true
+      - name: Install Playwright (Chromium)
+        run: python -m playwright install --with-deps chromium
+
+      # -------- Understat (robust, best-effort) --------
+      - name: Fetch Understat xG (rendered browser, retries)
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_LEAGUE: "epl"
+          US_LEAGUE: "EPL"
           US_SEASONS: "2023,2024,2025"
-          US_SLEEP_MS: "300"
-        run: |
-          if [ -f scripts/fetch_understat_xg.py ]; then
-            python -m scripts.fetch_understat_xg || true
-          else
-            echo "No scripts/fetch_understat_xg.py present; skipping."
-          fi
+        run: python -m scripts.fetch_understat_xg
 
       - name: Sanity check Understat CSV (non-fatal)
-        run: |
-          if [ -f data/understat_matches.csv ]; then
-            python - <<'PY'
-            import pandas as pd
-            df = pd.read_csv("data/understat_matches.csv")
-            print(f"[sanity] understat rows={len(df)} seasons=", sorted(df['season'].dropna().unique().tolist())[:8])
-            PY
-          else
-            echo "[sanity] No understat CSV; will rely on football-data fallback."
-          fi
-
-      # -------- ALWAYS: fetch FD fallback --------
-      - name: Fetch football-data results (fallback)
-        env:
-          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_SEASONS: "2023,2024,2025"
-          FD_SLEEP_MS: "300"
-          PYTHONPATH: ${{ github.workspace }}
-        run: python -m scripts.fetch_fd_results
-
-      - name: Sanity check FD CSV
+        shell: bash
         run: |
           python - <<'PY'
-          import pandas as pd, os
-          p = "data/fd_results.csv"
-          if not os.path.exists(p):
-            raise SystemExit("Missing FD CSV at " + p)
-          df = pd.read_csv(p)
-          print(f"[sanity] fd rows={len(df)} seasons=", sorted(df['season'].dropna().unique().tolist())[:8])
-          PY
+import os, pandas as pd
+p = "data/understat_matches.csv"
+if not os.path.exists(p):
+    print("[sanity] understat file missing -> fallback will be used if needed")
+else:
+    try:
+        df = pd.read_csv(p)
+        print(f"[sanity] understat rows={len(df)}")
+    except Exception as e:
+        print(f"[sanity] could not read understat csv: {e} -> fallback if needed")
+PY
 
-      # -------- Build strengths from whichever dataset is available --------
+      # -------- Football-Data fallback (always safe) --------
+      - name: Fetch football-data results (fallback)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          FD_SEASONS: "2023,2024,2025"
+        run: python -m scripts.fetch_fd_results
+
+      # -------- Build strengths (xG preferred, goals fallback) --------
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
+      # -------- Generate predictions (your existing generator) --------
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -97,23 +86,26 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
+      # -------- Keep the repo clean --------
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
+      # -------- Create & auto-merge PR --------
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
-          title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
+          title: "Predictions & tips – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update strengths and predictions"
+          commit-message: "chore: update strengths, predictions and tips"
           delete-branch: true
           merge: true
           merge-method: squash
 
+      # Optional: list dirs in logs
       - name: Post Checkout
         run: |
-          echo "--- data dir ---"; ls -la data || true
+          echo "--- data dir ---";    ls -la data || true
           echo "--- reports dir ---"; ls -la reports || true
