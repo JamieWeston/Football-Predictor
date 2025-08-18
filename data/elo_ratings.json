@@ -1,0 +1,101 @@
+{
+  "init": 1500.0,
+  "scale": 400.0,
+  "k_base": 20.0,
+  "home_adv_points": 60.0,
+  "draw_nu": 0.653061224489796,
+  "teams": {
+    "Manchester United FC": {
+      "elo": 1455.623863671037,
+      "games": 39
+    },
+    "Fulham FC": {
+      "elo": 1493.5361954668692,
+      "games": 39
+    },
+    "Ipswich Town FC": {
+      "elo": 1392.2522229057276,
+      "games": 38
+    },
+    "Liverpool FC": {
+      "elo": 1587.8982890299146,
+      "games": 39
+    },
+    "Arsenal FC": {
+      "elo": 1579.6078516036978,
+      "games": 39
+    },
+    "Wolverhampton Wanderers FC": {
+      "elo": 1463.068020768442,
+      "games": 39
+    },
+    "Everton FC": {
+      "elo": 1503.7382898856217,
+      "games": 39
+    },
+    "Brighton & Hove Albion FC": {
+      "elo": 1532.2766061252796,
+      "games": 39
+    },
+    "Newcastle United FC": {
+      "elo": 1541.413662552307,
+      "games": 39
+    },
+    "Southampton FC": {
+      "elo": 1370.8775802774676,
+      "games": 38
+    },
+    "Nottingham Forest FC": {
+      "elo": 1532.5389946479315,
+      "games": 39
+    },
+    "AFC Bournemouth": {
+      "elo": 1506.0322191359269,
+      "games": 39
+    },
+    "West Ham United FC": {
+      "elo": 1462.362806229371,
+      "games": 39
+    },
+    "Aston Villa FC": {
+      "elo": 1537.4551827236837,
+      "games": 39
+    },
+    "Brentford FC": {
+      "elo": 1509.2201257255774,
+      "games": 39
+    },
+    "Crystal Palace FC": {
+      "elo": 1529.2805280894,
+      "games": 39
+    },
+    "Chelsea FC": {
+      "elo": 1543.8432951905122,
+      "games": 39
+    },
+    "Manchester City FC": {
+      "elo": 1588.0084217293297,
+      "games": 39
+    },
+    "Leicester City FC": {
+      "elo": 1403.3802330334545,
+      "games": 38
+    },
+    "Tottenham Hotspur FC": {
+      "elo": 1463.4173453254455,
+      "games": 39
+    },
+    "Sunderland AFC": {
+      "elo": 1512.695716091645,
+      "games": 1
+    },
+    "Burnley FC": {
+      "elo": 1483.0278600217732,
+      "games": 1
+    },
+    "Leeds United FC": {
+      "elo": 1508.4446897695852,
+      "games": 1
+    }
+  }
+}
