@@ -1,5 +1,8 @@
-numpy
-pandas
-aiohttp
-understat
-requests
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.13.1
+aiohttp==3.9.5
+understat==0.4.0
+python-dateutil==2.9.0.post0
+requests==2.32.3
+pytz==2024.1
