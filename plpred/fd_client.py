@@ -1,100 +1,108 @@
 # plpred/fd_client.py
 from __future__ import annotations
-import time
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, List
 
-import requests
+import datetime as _dt
+import os
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+
 import pandas as pd
+import requests
 
-FD_BASE = "https://api.football-data.org/v4"
-PL_CODE = "PL"  # Premier League
 
-def _headers(token: str) -> Dict[str, str]:
-    h = {"Accept": "application/json"}
-    if token:
-        h["X-Auth-Token"] = token
-    return h
+def _http_get(url: str, *, headers: Optional[Dict[str, str]] = None,
+              params: Optional[Dict[str, Any]] = None, timeout: int = 20) -> Dict[str, Any]:
+    """Small wrapper so tests can inject a fake."""
+    r = requests.get(url, headers=headers or {}, params=params or {}, timeout=timeout)
+    r.raise_for_status()
+    return r.json()
 
-def _iso_d(d: datetime) -> str:
-    return d.strftime("%Y-%m-%d")
 
-def _get(url: str, token: str, params: Dict[str, Any]) -> Dict[str, Any] | None:
-    for attempt in range(3):
-        try:
-            r = requests.get(url, headers=_headers(token), params=params, timeout=20)
-            if r.status_code == 429 and attempt < 2:
-                retry_after = int(r.headers.get("Retry-After", "2"))
-                time.sleep(retry_after)
-                continue
-            r.raise_for_status()
-            return r.json()
-        except Exception:
-            if attempt == 2:
-                return None
-            time.sleep(1 + attempt)
-    return None
+# -------------------------------
+# Results (finished matches only)
+# -------------------------------
+def fetch_results(league: str, season: int, *, http_get: Optional[Callable[..., Dict[str, Any]]] = None
+                  ) -> pd.DataFrame:
+    """
+    Football-Data results for a league/season.
 
-def _matches_to_df(matches: List[Dict[str, Any]]) -> pd.DataFrame:
-    rows = []
-    for m in matches:
-        try:
-            utc_date = m.get("utcDate") or m.get("utc_date")
-            home = m["homeTeam"]["name"]
-            away = m["awayTeam"]["name"]
-            status = (m.get("status") or "").upper()
-            score = m.get("score") or {}
-            full = score.get("fullTime") or {}
-            hg = full.get("home")
-            ag = full.get("away")
-            rows.append(
-                {
-                    "utc_date": utc_date,
-                    "home": home,
-                    "away": away,
-                    "status": status,
-                    "home_goals": hg if isinstance(hg, int) else None,
-                    "away_goals": ag if isinstance(ag, int) else None,
-                }
-            )
-        except Exception:
+    Parameters
+    ----------
+    league : e.g. 'PL'
+    season : int  e.g. 2024
+    http_get : test seam (defaults to requests-based _http_get)
+    """
+    http_get = http_get or _http_get
+    token = os.getenv("FOOTBALL_DATA_TOKEN")
+    headers = {"X-Auth-Token": token} if token else {}
+
+    url = f"https://api.football-data.org/v4/competitions/{league}/matches"
+    params = {"season": int(season), "status": "FINISHED"}
+    data = http_get(url, headers=headers, params=params)
+
+    rows: List[Dict[str, Any]] = []
+    for m in data.get("matches", []):
+        ft = (m.get("score") or {}).get("fullTime") or {}
+        hg, ag = ft.get("home"), ft.get("away")
+        if hg is None or ag is None:
             continue
-    return pd.DataFrame(rows, columns=["utc_date", "home", "away", "status", "home_goals", "away_goals"])
+        rows.append({
+            "match_id": m.get("id"),
+            "utc_date": m.get("utcDate"),
+            "home": ((m.get("homeTeam") or {}).get("name")),
+            "away": ((m.get("awayTeam") or {}).get("name")),
+            "home_goals": int(hg),
+            "away_goals": int(ag),
+            "league": league,
+            "season": int(season),
+        })
 
-def fetch_fixtures(days: int, token: str = "") -> pd.DataFrame:
-    """Upcoming PL fixtures (SCHEDULED) for the next `days` days."""
-    if days <= 0:
-        return pd.DataFrame(columns=["utc_date", "home", "away"])
-    now = datetime.now(timezone.utc)
-    date_from = _iso_d(now)
-    date_to = _iso_d(now + timedelta(days=days))
-    url = f"{FD_BASE}/competitions/{PL_CODE}/matches"
-    params = {"status": "SCHEDULED", "dateFrom": date_from, "dateTo": date_to}
-    data = _get(url, token, params)
-    if not data or "matches" not in data:
-        return pd.DataFrame(columns=["utc_date", "home", "away"])
-    df = _matches_to_df(data["matches"])
-    if df.empty:
-        return pd.DataFrame(columns=["utc_date", "home", "away"])
-    return df.loc[:, ["utc_date", "home", "away"]].sort_values("utc_date").reset_index(drop=True)
+    return pd.DataFrame(rows)
 
-def fetch_results(days_back: int, token: str = "") -> pd.DataFrame:
-    """Finished PL matches in the last `days_back` days."""
-    if days_back <= 0:
-        return pd.DataFrame(columns=["utc_date", "home", "away", "home_goals", "away_goals"])
-    now = datetime.now(timezone.utc)
-    date_from = _iso_d(now - timedelta(days=days_back))
-    date_to = _iso_d(now)
-    url = f"{FD_BASE}/competitions/{PL_CODE}/matches"
-    params = {"status": "FINISHED", "dateFrom": date_from, "dateTo": date_to}
-    data = _get(url, token, params)
-    if not data or "matches" not in data:
-        return pd.DataFrame(columns=["utc_date", "home", "away", "home_goals", "away_goals"])
-    df = _matches_to_df(data["matches"])
-    if df.empty:
-        return pd.DataFrame(columns=["utc_date", "home", "away", "home_goals", "away_goals"])
-    df = df.loc[:, ["utc_date", "home", "away", "home_goals", "away_goals"]]
-    df = df.dropna(subset=["home_goals", "away_goals"])
-    df["home_goals"] = df["home_goals"].astype(int)
-    df["away_goals"] = df["away_goals"].astype(int)
-    return df.sort_values("utc_date").reset_index(drop=True)
+
+# -------------------------------
+# Fixtures (upcoming matches)
+# -------------------------------
+def fetch_fixtures(*args, **kwargs) -> pd.DataFrame:
+    """
+    Backwards-compatible fixtures fetch.
+
+    Supports BOTH call styles:
+      1) Legacy: fetch_fixtures(session, league, date_from, date_to, http_get=fake)
+      2) New:    fetch_fixtures(days=14, token=..., http_get=fake)
+
+    Returns a DataFrame with: [match_id, utc_date, home, away, competition]
+    """
+    http_get = kwargs.get("http_get") or _http_get
+    token = kwargs.get("token") or os.getenv("FOOTBALL_DATA_TOKEN")
+    headers = {"X-Auth-Token": token} if token else {}
+
+    # --- legacy positional signature detection
+    if len(args) >= 3 and isinstance(args[1], str):
+        # (session, league, date_from, date_to, ...)
+        league = args[1]
+        date_from = args[2]
+        date_to = args[3] if len(args) >= 4 else date_from
+        url = f"https://api.football-data.org/v4/competitions/{league}/matches"
+        params = {"status": "SCHEDULED", "dateFrom": date_from, "dateTo": date_to}
+        data = http_get(url, headers=headers, params=params)
+    else:
+        # --- modern: rolling window
+        days = int(kwargs.get("days") or kwargs.get("days_ahead") or 14)
+        today = _dt.date.today()
+        date_from = today.isoformat()
+        date_to = (today + _dt.timedelta(days=days)).isoformat()
+        url = "https://api.football-data.org/v4/matches"
+        params = {"status": "SCHEDULED", "dateFrom": date_from, "dateTo": date_to}
+        data = http_get(url, headers=headers, params=params)
+
+    rows: List[Dict[str, Any]] = []
+    for m in data.get("matches", []):
+        rows.append({
+            "match_id": m.get("id"),
+            "utc_date": m.get("utcDate"),
+            "home": ((m.get("homeTeam") or {}).get("name")),
+            "away": ((m.get("awayTeam") or {}).get("name")),
+            "competition": ((m.get("competition") or {}).get("code")),
+        })
+    return pd.DataFrame(rows)
+
