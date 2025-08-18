@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 import json
 import math
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Tuple
 
@@ -35,15 +35,11 @@ def _norm_team(name: str) -> str:
     n = n.replace("&", "and")
     n = n.replace(".", " ")
     n = n.replace("  ", " ")
-    # strip trailing competition artifacts
     n = n.strip()
-    # drop trailing "FC" / "AFC" / "CF" / "SC" tokens
     tokens = [t for t in n.split() if t.upper() not in {"FC", "AFC", "CF", "SC"}]
     n = " ".join(tokens)
-    # common tidy-ups
     n = n.replace(" Utd", " United")
     n = n.replace(" Hotspur", " Hotspur")
-    # fold repeated whitespace
     n = " ".join(n.split())
     return n
 
@@ -76,8 +72,8 @@ def main() -> int:
     blend_elo = float(os.getenv("BLEND_ELO", "0.35"))  # 0..1
     token = os.getenv("FOOTBALL_DATA_TOKEN", "")
 
-    # 1) fixtures (next N days)
-    fixtures = fetch_fixtures(days_ahead=window_days, token=token)
+    # 1) fixtures (next N days)  <-- FIXED: use 'days' kwarg
+    fixtures = fetch_fixtures(days=window_days, token=token)
     if fixtures.empty:
         out = {"generated_utc": _now_utc_iso(), "predictions": [], "notes": {"reason": "no-fixtures"}}
         _write_json(DATA_DIR / "predictions.json", out)
@@ -93,7 +89,6 @@ def main() -> int:
     ratings_path = DATA_DIR / "team_strengths.json"
     ratings = _load_json(ratings_path)
 
-    # if ratings missing/invalid, build them now
     build_reason = None
     if not ratings or "teams" not in ratings or not isinstance(ratings["teams"], dict):
         days_back = int(os.getenv("FD_RESULTS_LOOKBACK_DAYS", "400"))
@@ -103,7 +98,6 @@ def main() -> int:
             ratings = {"teams": {}, "league_avg_gpg": 2.6, "home_adv": 1.08}
             build_reason = "neutral"
         else:
-            # normalise so names align with fixtures
             results = results.copy()
             results["home"] = results["home"].map(_norm_team)
             results["away"] = results["away"].map(_norm_team)
@@ -114,7 +108,7 @@ def main() -> int:
             except Exception as e:
                 print(f"[warn] could not write {ratings_path}: {e}")
 
-    # 4) Load or build ELO from the same results (if not already created)
+    # 4) Load or build ELO
     elo_path = DATA_DIR / "elo.json"
     elo = _load_json(elo_path)
     if not elo or not isinstance(elo, dict) or "ratings" not in elo:
@@ -155,18 +149,14 @@ def main() -> int:
         if ta is NEUTRAL:
             missing_teams.add(a_raw)
 
-        # λ/μ from team strengths
         lam = base_home * th.get("att_h", 1.0) * ta.get("def_a", 1.0) * home_adv
         mu = base_away * ta.get("att_a", 1.0) * th.get("def_h", 1.0)
 
-        # guard rails
         lam = max(0.05, float(lam))
         mu = max(0.05, float(mu))
 
-        # Poisson probabilities
         p_home_pois, p_draw_pois, p_away_pois = outcome_probs(lam, mu)
 
-        # ELO probabilities (falls back to neutral if a rating missing)
         try:
             p_home_elo, p_draw_elo, p_away_elo = elo_match_probs(elo, h, a)
         except Exception:
@@ -176,17 +166,11 @@ def main() -> int:
         p_home = (1 - w) * p_home_pois + w * p_home_elo
         p_draw = (1 - w) * p_draw_pois + w * p_draw_elo
         p_away = (1 - w) * p_away_pois + w * p_away_elo
-
-        # normalise just in case of numeric drift
         s = p_home + p_draw + p_away
         if s > 0:
             p_home, p_draw, p_away = p_home / s, p_draw / s, p_away / s
 
         scorelines = top_scorelines(lam, mu, k=3)
-
-        # tiny-rates warning (helps catch future issues)
-        if lam + mu < 0.35:
-            print(f"[warn] very small rates {h_raw} vs {a_raw}: lam={lam:.2f}, mu={mu:.2f}")
 
         preds.append({
             "match_id": f"{kickoff}_{h[:3]}-{a[:3]}",
@@ -218,8 +202,8 @@ def main() -> int:
         "generated_utc": _now_utc_iso(),
         "predictions": preds,
         "notes": {
-            "ratings_source": "cache" if build_reason is None else build_reason,
-            "teams_missing_strengths": sorted(list(missing_teams))[:10],  # sample first 10 for brevity
+            "ratings_source": "cache" if "built_from_fd" not in locals() else "built_from_fd",
+            "teams_missing_strengths": sorted(list(missing_teams))[:10],
             "avg_gpg": avg_gpg,
             "home_adv": home_adv,
         }
