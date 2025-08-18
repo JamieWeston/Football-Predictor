@@ -2,80 +2,64 @@
 import math
 import numpy as np
 
-def _poisson_vec(rate, max_goals):
-    k = np.arange(max_goals + 1)
-    pmf = np.exp(-rate) * np.power(rate, k) / np.maximum(1, np.array([np.math.factorial(int(i)) for i in k]))
-    pmf /= pmf.sum()
-    return pmf
+MAX_GOALS = 10  # grid
 
-class PoissonDC:
+def poisson_grid(lam: float, mu: float):
+    """Return independent Poisson goal grid Px[i,j] for i,j=0..MAX_GOALS."""
+    i = np.arange(MAX_GOALS + 1)
+    j = np.arange(MAX_GOALS + 1)
+    p_home = np.exp(-lam) * np.power(lam, i) / np.vectorize(math.factorial)(i)
+    p_away = np.exp(-mu) * np.power(mu, j) / np.vectorize(math.factorial)(j)
+    return np.outer(p_home, p_away)
+
+def dixon_coles_adjust(P: np.ndarray, lam: float, mu: float, rho: float = -0.13):
     """
-    Poisson + Dixon–Coles model
-
-    We map features to expected goals as:
-      log(lambda_home) = log(base_home) + HA_club + attack_home - defence_away + adj
-      log(mu_away)     = log(base_away) - HA_club + attack_away - defence_home + adj
-
-    - attack/defence are log-strengths from rolling xG
-    - HA_club is per-club (log) home advantage
+    Apply DC adjustment to low-score cells. rho<0 typically increases 0-0 and 1-1 a bit.
     """
-    def __init__(self, base_home=1.55, base_away=1.25, rho=-0.10, max_goals=10, floor_rate=0.12):
-        self.base_home = float(base_home)
-        self.base_away = float(base_away)
-        self.rho = float(rho)
-        self.max_goals = int(max_goals)
-        self.floor_rate = float(floor_rate)
+    P = P.copy()
+    # probabilities for 0-0, 0-1, 1-0, 1-1:
+    p00 = math.exp(-(lam + mu))
+    p01 = math.exp(-(lam + mu)) * mu
+    p10 = math.exp(-(lam + mu)) * lam
+    p11 = math.exp(-(lam + mu)) * lam * mu
 
-    def rates_from_features(self, atk_h, def_h, ha_h, atk_a, def_a, ha_a=0.0, extra_adj=0.0):
-        log_lam = math.log(self.base_home) + ha_h + atk_h - def_a + extra_adj
-        log_mu  = math.log(self.base_away) - ha_h + atk_a - def_h + extra_adj
-        lam = max(self.floor_rate, float(math.exp(log_lam)))
-        mu  = max(self.floor_rate, float(math.exp(log_mu)))
-        return lam, mu
+    # Apply scaling factor to these four cells only
+    P[0, 0] *= (1 + rho)
+    if MAX_GOALS >= 1:
+        P[0, 1] *= (1 - rho)
+        P[1, 0] *= (1 - rho)
+        P[1, 1] *= (1 + rho)
 
-    def build_grid(self, lam, mu):
-        ph = _poisson_vec(lam, self.max_goals)
-        pa = _poisson_vec(mu,  self.max_goals)
-        M = np.outer(ph, pa)
+    # renormalize
+    P /= P.sum()
+    return P
 
-        # Dixon–Coles small-score adjustment
-        rho = self.rho
-        def f_adj(i, j):
-            if i == 0 and j == 0: return 1.0 - lam * mu * rho
-            if i == 0 and j == 1: return 1.0 + lam * rho
-            if i == 1 and j == 0: return 1.0 + mu * rho
-            if i == 1 and j == 1: return 1.0 - rho
-            return 1.0
+def markets_from_grid(P: np.ndarray):
+    i = np.arange(P.shape[0])
+    j = np.arange(P.shape[1])
+    I, J = np.meshgrid(i, j, indexing="ij")
 
-        for (i, j) in [(0,0), (0,1), (1,0), (1,1)]:
-            M[i, j] *= max(0.0, f_adj(i, j))
-        M /= M.sum()
-        return M
+    home = float(P[I > J].sum())
+    draw = float(P[I == J].sum())
+    away = float(P[I < J].sum())
 
-    def probs_from_grid(self, M):
-        idx = np.arange(M.shape[0])
-        p_draw = float(M[idx, idx].sum())
-        p_home = float(np.tril(M, -1).sum())
-        p_away = float(np.triu(M, +1).sum())
-        return p_home, p_draw, p_away
+    btts_yes = float(P[(I > 0) & (J > 0)].sum())
+    btts_no = 1.0 - btts_yes
 
-    def btts_over_under_from_grid(self, M, threshold=2.5):
-        i = np.arange(M.shape[0]); j = np.arange(M.shape[1])
-        I, J = np.meshgrid(i, j, indexing='ij')
-        btts_yes = float(M[(I > 0) & (J > 0)].sum()); btts_no  = 1.0 - btts_yes
-        over = float(M[(I + J) > threshold].sum());    under = 1.0 - over
-        return btts_yes, btts_no, over, under
+    over25 = float(P[(I + J) >= 3].sum())
+    under25 = 1.0 - over25
 
-    def expected_goals_from_grid(self, M):
-        i = np.arange(M.shape[0]); j = np.arange(M.shape[1])
-        ex_h = float((M * i[:, None]).sum()); ex_a = float((M * j[None, :]).sum())
-        return ex_h, ex_a
+    # top 3 scorelines
+    flat = []
+    for hi in range(P.shape[0]):
+        for aj in range(P.shape[1]):
+            flat.append((hi, aj, float(P[hi, aj])))
+    flat.sort(key=lambda x: x[2], reverse=True)
+    top3 = [{"home_goals": a, "away_goals": b, "prob": p} for a, b, p in flat[:3]]
 
-    def top_scorelines(self, M, k=3):
-        items = []
-        for i in range(M.shape[0]):
-            for j in range(M.shape[1]):
-                items.append((float(M[i, j]), i, j))
-        items.sort(reverse=True)
-        return [{"home_goals": i, "away_goals": j, "prob": p} for p, i, j in items[:k]]
-
+    return {
+        "probs": {"home": home, "draw": draw, "away": away},
+        "btts": {"yes": btts_yes, "no": btts_no},
+        "totals_2_5": {"over": over25, "under": under25},
+        "scorelines_top": top3,
+    }
