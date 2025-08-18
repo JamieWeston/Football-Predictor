@@ -1,216 +1,118 @@
 # scripts/generate.py
-# CORE generator with on-the-fly ratings + ELO and robust name normalisation.
-# - If data/team_strengths.json or ELO isn't available, build from recent FD results.
-# - Blends Poisson (from ratings) with ELO probabilities.
-# - Emits detailed notes to help diagnose fallbacks.
-
 from __future__ import annotations
-import os
+
 import json
-import math
-from datetime import datetime, timezone
+import os
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 
 import pandas as pd
 
+# Local package imports (repo root is on PYTHONPATH in the workflow)
 from plpred.fd_client import fetch_fixtures, fetch_results
 from plpred.ratings import build_ratings
 from plpred.elo import build_elo, elo_match_probs
 from plpred.predict import outcome_probs, top_scorelines
 
+
 DATA_DIR = Path("data")
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+OUT_JSON = DATA_DIR / "predictions.json"
 
-# ---------- helpers ----------
 
-def _now_utc_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+def _abbr(name: str) -> str:
+    """Very small slug for match_id."""
+    if not name:
+        return "UNK"
+    # take first 3 alnum characters across words
+    s = "".join(ch for ch in name if ch.isalnum())
+    return (s[:3] or "UNK")
 
-def _norm_team(name: str) -> str:
-    """Normalise team text so fixtures and results can be joined reliably."""
-    if not isinstance(name, str):
-        return name
-    n = name
-    n = n.replace("&", "and")
-    n = n.replace(".", " ")
-    n = n.replace("  ", " ")
-    n = n.strip()
-    tokens = [t for t in n.split() if t.upper() not in {"FC", "AFC", "CF", "SC"}]
-    n = " ".join(tokens)
-    n = n.replace(" Utd", " United")
-    n = n.replace(" Hotspur", " Hotspur")
-    n = " ".join(n.split())
-    return n
 
-def _split_home_away_from_avg(league_avg_gpg: float, home_share: float = 0.58) -> Tuple[float, float]:
-    """Split league average goals into home/away means (roughly EPL-ish)."""
-    home = max(0.6, league_avg_gpg * home_share)
-    away = max(0.5, league_avg_gpg * (1.0 - home_share))
-    return home, away
+def _team(ratings: Dict[str, Any], team: str) -> Dict[str, float]:
+    return ratings.get("teams", {}).get(team, {})
 
-def _load_json(path: Path) -> Any | None:
-    if path.exists():
-        try:
-            with path.open("r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return None
-    return None
 
-def _write_json(path: Path, obj: Any) -> None:
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        json.dump(obj, f, indent=2)
-    tmp.replace(path)
+def _expected_goals(ratings: Dict[str, Any], home: str, away: str) -> Dict[str, float]:
+    """
+    Conservative expected-goals estimate using team attack/defence splits.
+    Keeps defaults (1.35 / 1.15) if ratings are thin.
+    """
+    th = _team(ratings, home)
+    ta = _team(ratings, away)
 
-# ---------- main core pipeline ----------
+    # sensible league baselines
+    base_h, base_a = 1.35, 1.15
+    # use splits if available, else fall back to neutral att/def (1.0)
+    lam_h = base_h * float(th.get("att_h", th.get("att", 1.0))) * float(ta.get("def_a", ta.get("def", 1.0)))
+    lam_a = base_a * float(ta.get("att_a", ta.get("att", 1.0))) * float(th.get("def_h", th.get("def", 1.0)))
+    return {"home": round(max(lam_h, 0.05), 2), "away": round(max(lam_a, 0.05), 2)}
 
-def main() -> int:
-    os.environ.setdefault("PYTHONHASHSEED", "0")
-    window_days = int(os.getenv("FD_WINDOW_DAYS", "21"))
-    blend_elo = float(os.getenv("BLEND_ELO", "0.35"))  # 0..1
+
+def main() -> None:
+    # --- configuration via env ---
     token = os.getenv("FOOTBALL_DATA_TOKEN", "")
+    window_days = int(os.getenv("FD_WINDOW_DAYS", "14"))       # future fixtures span
+    lookback_days = int(os.getenv("FD_LOOKBACK_DAYS", "365"))  # historical window
+    blend_elo = float(os.getenv("BLEND_ELO", "0.40"))          # 0..1 weight for ELO in the blend
 
-    # 1) fixtures (next N days)  <-- FIXED: use 'days' kwarg
-    fixtures = fetch_fixtures(days=window_days, token=token)
-    if fixtures.empty:
-        out = {"generated_utc": _now_utc_iso(), "predictions": [], "notes": {"reason": "no-fixtures"}}
-        _write_json(DATA_DIR / "predictions.json", out)
-        print("[core] no fixtures. wrote empty predictions.json")
-        return 0
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 2) ensure normalised fixture names
-    fixtures = fixtures.copy()
-    fixtures["home_n"] = fixtures["home"].map(_norm_team)
-    fixtures["away_n"] = fixtures["away"].map(_norm_team)
+    # --- fetch input data (POSitional calls – no keyword names) ---
+    fixtures = fetch_fixtures(window_days, token)          # <-- positional
+    results = fetch_results(lookback_days, token)          # <-- positional
 
-    # 3) Load or build ratings from recent FD results
-    ratings_path = DATA_DIR / "team_strengths.json"
-    ratings = _load_json(ratings_path)
-
-    build_reason = None
-    if not ratings or "teams" not in ratings or not isinstance(ratings["teams"], dict):
-        days_back = int(os.getenv("FD_RESULTS_LOOKBACK_DAYS", "400"))
-        results = fetch_results(days_back=days_back, token=token)
-        if results.empty:
-            print("[warn] could not fetch results; strengths will be neutral.")
-            ratings = {"teams": {}, "league_avg_gpg": 2.6, "home_adv": 1.08}
-            build_reason = "neutral"
-        else:
-            results = results.copy()
-            results["home"] = results["home"].map(_norm_team)
-            results["away"] = results["away"].map(_norm_team)
-            ratings = build_ratings(results)
-            build_reason = "built_from_fd"
-            try:
-                _write_json(ratings_path, ratings)
-            except Exception as e:
-                print(f"[warn] could not write {ratings_path}: {e}")
-
-    # 4) Load or build ELO
-    elo_path = DATA_DIR / "elo.json"
-    elo = _load_json(elo_path)
-    if not elo or not isinstance(elo, dict) or "ratings" not in elo:
-        days_back = int(os.getenv("FD_RESULTS_LOOKBACK_DAYS", "400"))
-        res_for_elo = fetch_results(days_back=days_back, token=token)
-        if res_for_elo.empty:
-            print("[warn] could not fetch results for ELO; will use neutral ELO=1500.")
-            elo = {"ratings": {}}
-        else:
-            res_for_elo = res_for_elo.copy()
-            res_for_elo["home"] = res_for_elo["home"].map(_norm_team)
-            res_for_elo["away"] = res_for_elo["away"].map(_norm_team)
-            elo = build_elo(res_for_elo)
-            try:
-                _write_json(elo_path, elo)
-            except Exception as e:
-                print(f"[warn] could not write {elo_path}: {e}")
-
-    teams = ratings.get("teams", {})
-    avg_gpg = float(ratings.get("league_avg_gpg", 2.6))
-    home_adv = float(ratings.get("home_adv", 1.08))
-    base_home, base_away = _split_home_away_from_avg(avg_gpg, home_share=0.58)
-
-    NEUTRAL = {"att": 1.0, "def": 1.0, "att_h": 1.0, "def_h": 1.0, "att_a": 1.0, "def_a": 1.0}
+    # --- build model ingredients ---
+    ratings = build_ratings(results)                       # rolling team strengths
+    elo_tbl = build_elo(results)                           # ELO ratings
 
     preds = []
-    missing_teams = set()
+    if not fixtures.empty:
+        for _, row in fixtures.iterrows():
+            home = str(row["home"])
+            away = str(row["away"])
+            utc = str(row["utc_date"])
 
-    for _, row in fixtures.iterrows():
-        h_raw, a_raw = row["home"], row["away"]
-        h, a = row["home_n"], row["away_n"]
-        kickoff = row["utc_date"]
+            # components
+            p_poiss = outcome_probs(home, away, ratings)
+            p_elo = elo_match_probs(home, away, elo_tbl)
 
-        th = teams.get(h, NEUTRAL)
-        ta = teams.get(a, NEUTRAL)
-        if th is NEUTRAL:
-            missing_teams.add(h_raw)
-        if ta is NEUTRAL:
-            missing_teams.add(a_raw)
+            # blend
+            probs = {
+                "home": blend_elo * p_elo["home"] + (1.0 - blend_elo) * p_poiss["home"],
+                "draw": blend_elo * p_elo["draw"] + (1.0 - blend_elo) * p_poiss["draw"],
+                "away": blend_elo * p_elo["away"] + (1.0 - blend_elo) * p_poiss["away"],
+            }
+            # ensure tidy rounding without changing totals too much
+            probs = {k: round(float(v), 4) for k, v in probs.items()}
 
-        lam = base_home * th.get("att_h", 1.0) * ta.get("def_a", 1.0) * home_adv
-        mu = base_away * ta.get("att_a", 1.0) * th.get("def_h", 1.0)
+            # scorelines (poisson grid)
+            scorelines = top_scorelines(home, away, ratings)
 
-        lam = max(0.05, float(lam))
-        mu = max(0.05, float(mu))
+            # simple xG view from ratings
+            xg = _expected_goals(ratings, home, away)
 
-        p_home_pois, p_draw_pois, p_away_pois = outcome_probs(lam, mu)
+            preds.append(
+                {
+                    "match_id": f"{utc}_{_abbr(home)}-{_abbr(away)}",
+                    "home": home,
+                    "away": away,
+                    "kickoff_utc": utc,
+                    "xg": xg,
+                    "probs": probs,
+                    "probs_components": {
+                        "poisson": {k: round(float(v), 4) for k, v in p_poiss.items()},
+                        "elo": {k: round(float(v), 4) for k, v in p_elo.items()},
+                    },
+                    "scorelines_top": scorelines,
+                    "notes": {"blend_elo": blend_elo},
+                }
+            )
 
-        try:
-            p_home_elo, p_draw_elo, p_away_elo = elo_match_probs(elo, h, a)
-        except Exception:
-            p_home_elo, p_draw_elo, p_away_elo = 0.3923, 0.33, 0.2777
+    # --- write output JSON ---
+    out = {"generated_utc": pd.Timestamp.utcnow().isoformat(), "predictions": preds}
+    OUT_JSON.write_text(json.dumps(out, indent=2))
+    print(f"[generate] wrote {OUT_JSON} with {len(preds)} predictions")
 
-        w = float(blend_elo)
-        p_home = (1 - w) * p_home_pois + w * p_home_elo
-        p_draw = (1 - w) * p_draw_pois + w * p_draw_elo
-        p_away = (1 - w) * p_away_pois + w * p_away_elo
-        s = p_home + p_draw + p_away
-        if s > 0:
-            p_home, p_draw, p_away = p_home / s, p_draw / s, p_away / s
-
-        scorelines = top_scorelines(lam, mu, k=3)
-
-        preds.append({
-            "match_id": f"{kickoff}_{h[:3]}-{a[:3]}",
-            "home": h_raw,
-            "away": a_raw,
-            "kickoff_utc": kickoff,
-            "xg": {"home": round(lam, 2), "away": round(mu, 2)},
-            "probs": {"home": round(p_home, 4), "draw": round(p_draw, 4), "away": round(p_away, 4)},
-            "probs_components": {
-                "poisson": {
-                    "home": round(p_home_pois, 4),
-                    "draw": round(p_draw_pois, 4),
-                    "away": round(p_away_pois, 4),
-                },
-                "elo": {
-                    "home": round(p_home_elo, 4),
-                    "draw": round(p_draw_elo, 4),
-                    "away": round(p_away_elo, 4),
-                },
-            },
-            "scorelines_top": [
-                {"home_goals": int(s["home_goals"]), "away_goals": int(s["away_goals"]), "prob": round(float(s["prob"]), 4)}
-                for s in scorelines
-            ],
-            "notes": {"blend_elo": w}
-        })
-
-    out = {
-        "generated_utc": _now_utc_iso(),
-        "predictions": preds,
-        "notes": {
-            "ratings_source": "cache" if "built_from_fd" not in locals() else "built_from_fd",
-            "teams_missing_strengths": sorted(list(missing_teams))[:10],
-            "avg_gpg": avg_gpg,
-            "home_adv": home_adv,
-        }
-    }
-    _write_json(DATA_DIR / "predictions.json", out)
-    print(f"[core] wrote {len(preds)} predictions to data/predictions.json")
-    return 0
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
