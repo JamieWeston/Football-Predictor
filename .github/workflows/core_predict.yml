@@ -1,33 +1,36 @@
-name: Predict (direct commit to main)
+name: Core Predict (auto)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   schedule:
-    - cron: "30 6 * * *"     # daily 06:30 UTC
-    - cron: "30 22 * * SAT"  # Sat 22:30 UTC
-    - cron: "30 22 * * SUN"  # Sun 22:30 UTC
-    - cron: "30 8 * * MON"   # Mon 08:30 UTC
+    # UTC – run every day at 06:05 and 18:05
+    - cron: "5 6 * * *"
+    - cron: "5 18 * * *"
+  push:
+    branches: [ main ]
+    paths:
+      - "plpred/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - ".github/workflows/core_predict.yml"
 
 permissions:
   contents: write
+
+concurrency:
+  group: core-predict-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   predict:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    concurrency:
-      group: predict
-      cancel-in-progress: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          persist-credentials: true
-
-      - name: Ensure output folders
-        run: |
-          mkdir -p data reports
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,68 +38,78 @@ jobs:
           python-version: "3.11"
 
       - name: Upgrade pip tooling
-        run: python -m pip install --upgrade pip setuptools wheel
+        run: python -m pip install --upgrade pip wheel setuptools
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
       - name: Install runtime deps
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          # Optional: install dev requirements if present (won't fail if missing)
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt || true; fi
 
-      # Optional: update ratings if present; safe no-op if script doesn't exist
-      - name: Update team ratings (optional)
+      - name: Ensure output folders
+        run: |
+          mkdir -p data
+          mkdir -p reports
+
+      - name: Sanity import
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           python - <<'PY'
-          import importlib.util, sys
-          if importlib.util.find_spec('scripts.update_ratings_elo'):
-              import runpy
-              runpy.run_module('scripts.update_ratings_elo', run_name='__main__')
-              print("Ran scripts.update_ratings_elo")
-          else:
-              print("No scripts.update_ratings_elo; skipping")
+          import json, pandas as pd, numpy as np
+          import importlib
+          importlib.import_module("plpred.ratings")
+          importlib.import_module("plpred.predict")
+          print("sanity: imports OK")
           PY
 
-      - name: Generate predictions & tips
+      - name: Generate predictions & tips (CORE)
         env:
           PYTHONPATH: ${{ github.workspace }}
-          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}  # optional
-          FD_WINDOW_DAYS: "14"
-          FD_STATUSES: "SCHEDULED,TIMED"
-          PYTHONUNBUFFERED: "1"
+          PREDICT_MODE: core          # dispatcher in scripts/generate.py selects core
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}  # optional, used if your core generator fetches fixtures
         run: |
           python -u -m scripts.generate
-          echo "---- sanity: data/predictions.json (tail) ----"
-          tail -n 50 data/predictions.json || true
-          echo "---- sanity: data/tips.json (tail) ----"
-          tail -n 50 data/tips.json || true
-          # warn hard if predictions ended up empty
-          python - <<'PY'
-          import json, sys
-          try:
-              with open('data/predictions.json') as f:
-                  j=json.load(f)
-              preds=j.get('predictions',[])
-              if not preds:
-                  print("WARNING: predictions.json contains 0 matches", file=sys.stderr)
-          except Exception as e:
-              print("ERROR reading predictions.json:", e, file=sys.stderr)
-              sys.exit(1)
-          PY
 
-      - name: Upload data as artifact
+      - name: Verify outputs exist
+        run: |
+          test -s data/predictions.json || (echo "ERROR: data/predictions.json missing" && exit 1)
+          echo "predictions.json present"
+
+      - name: Upload outputs (artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: data-json
+          name: core-outputs
           path: |
             data/*.json
             data/*.csv
-          if-no-files-found: warn
+            reports/**
+          if-no-files-found: ignore
+          retention-days: 7
 
-      - name: Commit updated JSON/CSV to main
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update predictions and data (auto)"
-          file_pattern: |
-            data/*.json
-            data/*.csv
-            reports/PR_BODY.md
-          add_options: '-A'
+      - name: Commit updated outputs to main
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Add common outputs; ignore if some don't exist
+          git add data/predictions.json || true
+          git add data/tips.json || true
+          git add data/team_strengths.json || true
+          git add reports/PR_BODY.md || true
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore(core): update predictions & tips [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
