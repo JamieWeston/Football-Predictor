@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "football-predictor"
+version = "0.0.1"
+description = "Core+++ Premier League predictor"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+# Only install the library package (tests/scripts are not installed as packages)
+packages = ["plpred"]
