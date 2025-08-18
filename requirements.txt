@@ -3,11 +3,11 @@ numpy==1.26.4
 pandas==2.2.2
 scipy==1.13.1
 
-# http + parsing
+# http + parsing (still useful if/when Understat cooperates)
 requests==2.32.3
 beautifulsoup4==4.12.3
 lxml==5.2.2
 
-# date/time helpers (pandas deps anyway, pinned for safety)
+# pinned transitive deps
 python-dateutil==2.9.0.post0
 pytz==2024.1
