@@ -1,14 +1,23 @@
+# Python bytecode / caches
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
 
+# Virtual environments
 .venv/
 venv/
 
+# Tool caches
 .pytest_cache/
 .mypy_cache/
 
+# Local data caches (keep predictions JSONs in data/)
 data/tmp/
 data/cache/
+
+# Packaging / build artifacts
+*.egg-info/
+dist/
+build/
