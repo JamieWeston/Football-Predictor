@@ -15,7 +15,7 @@ permissions:
 jobs:
   predict:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     concurrency:
       group: predict
       cancel-in-progress: true
@@ -35,45 +35,14 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      - name: Install Playwright (Chromium)
-        run: python -m playwright install --with-deps chromium
-
-      # ---------- Understat (robust, best-effort) ----------
-      - name: Fetch Understat xG (rendered browser, retries)
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-          US_LEAGUE: "EPL"
-          US_SEASONS: "2023,2024,2025"
-        run: python -m scripts.fetch_understat_xg
-
-      # Keep this as a non-fatal check — implemented as a one-liner to avoid here-doc issues
-      - name: Sanity check Understat CSV (non-fatal)
-        shell: bash
-        run: |
-          python -c "import os, pandas as pd; p='data/understat_matches.csv'; 
-if not os.path.exists(p): print('[sanity] understat file missing -> fallback may be used');
-else:
-  import sys
-  try:
-    df=pd.read_csv(p); print(f'[sanity] understat rows={len(df)}')
-  except Exception as e:
-    print(f'[sanity] could not read understat csv: {e}')"
-
-      # ---------- Football-Data fallback (always safe) ----------
-      - name: Fetch football-data results (fallback)
+      # ---------- STABLE STRENGTHS (Elo from Football-Data results) ----------
+      - name: Build rolling strengths from results (Elo)
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_SEASONS: "2023,2024,2025"
-        run: python -m scripts.fetch_fd_results
+        run: python -m scripts.update_ratings_elo
 
-      # ---------- Build strengths (xG preferred, goals fallback) ----------
-      - name: Compute team strengths
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: python -m scripts.compute_team_strengths
-
-      # ---------- Generate predictions (your existing generator) ----------
+      # ---------- PREDICTIONS ----------
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -83,25 +52,25 @@ else:
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # ---------- Keep repo clean ----------
+      # ---------- KEEP REPO CLEAN ----------
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-      # ---------- Create & auto-merge PR ----------
+      # ---------- CREATE & AUTO-MERGE PR ----------
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update strengths, predictions and tips"
+          commit-message: "chore: update ratings, predictions and tips"
           delete-branch: true
           merge: true
           merge-method: squash
 
-      - name: Post Checkout
+      - name: Post run: list data & reports
         run: |
-          echo "--- data dir ---";    ls -la data || true
-          echo "--- reports dir ---"; ls -la reports || true
+          echo "--- data ---";    ls -la data || true
+          echo "--- reports ---"; ls -la reports || true
