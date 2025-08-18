@@ -1,19 +1,12 @@
-name: Predict & open PR (auto-merge)
+name: Predict & open PR (auto-merge, robust)
 
 on:
-  # Manual button in the UI
   workflow_dispatch:
-
-  # Auto — runs every 6 hours (UTC). Change if you want (see notes below).
   schedule:
-    - cron: "5 */6 * * *"
-
-  # Also re-run when relevant code or the workflow itself changes
-  push:
-    paths:
-      - "scripts/**"
-      - "requirements.txt"
-      - ".github/workflows/predict.yml"
+    - cron: "30 6 * * *"     # daily 06:30 UTC
+    - cron: "30 22 * * SAT"  # Sat night top-up (UTC)
+    - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
+    - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
 
 permissions:
   contents: write
@@ -40,53 +33,61 @@ jobs:
         run: python -m pip install --upgrade pip setuptools wheel
 
       - name: Install deps
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
 
-      # Optional/best-effort: fetch rolling xG from Understat
-      # (This step is allowed to fail so the rest of the pipeline still runs.)
+      # --- BEST-EFFORT Understat fetch (non-fatal if empty) -------------------
       - name: Fetch Understat xG (best-effort)
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_LEAGUE: "epl"                 # Understat league code (lowercase)
-          US_SEASONS: "2023,2024,2025"     # fetch multiple seasons
-          US_RETRIES: "3"
-          US_SLEEP_MS: "800"
-        run: python -m scripts.fetch_understat_xg
-        continue-on-error: true
+          US_SEASONS: "2023,2024,2025"
+          US_LEAGUE: "epl"
+        run: |
+          set -e
+          python -m scripts.fetch_understat_xg || true
+          test -f data/understat_matches.csv && wc -l data/understat_matches.csv || true
 
       - name: Sanity check Understat CSV (non-fatal)
-        shell: bash
-        continue-on-error: true
         run: |
           if [ -f data/understat_matches.csv ]; then
-            echo "Understat CSV present."
-            echo "Rows: $(wc -l < data/understat_matches.csv)"
-            head -n 3 data/understat_matches.csv || true
-          else
-            echo "Understat CSV not found – continuing."
+            python - <<'PY'
+import pandas as pd
+from pathlib import Path
+p = Path("data/understat_matches.csv")
+try:
+    df = pd.read_csv(p)
+    print(f"[sanity] understat rows: {len(df)}")
+except Exception as e:
+    print(f"[sanity] understat not readable: {e}")
+PY
           fi
 
+      # --- ALWAYS create the fallback results CSV -----------------------------
+      - name: Fetch football-data results (fallback)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: |
+          python -m scripts.fetch_fd_results
+          test -f data/fd_results.csv && wc -l data/fd_results.csv || true
+
+      # --- Compute strengths (uses Understat if available, else fallback) -----
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
+      # --- Generate predictions & tips ---------------------------------------
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_WINDOW_DAYS: "14"            # try 21 if you need a longer window
-          FD_STATUSES: "SCHEDULED,TIMED"  # only future fixtures
-          PYTHONUNBUFFERED: "1"           # flush logs promptly
+          FD_WINDOW_DAYS: "14"
+          FD_STATUSES: "SCHEDULED,TIMED"
+          PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # Keep the repo clean (don’t commit caches)
-      - name: Untrack Python caches before PR
-        shell: bash
-        run: |
-          git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
-          git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
-
+      # --- PR & auto-merge ----------------------------------------------------
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
@@ -98,10 +99,8 @@ jobs:
           merge: true
           merge-method: squash
 
-      # (Optional) show file tree in logs
+      # Optional: show file tree in logs
       - name: Post Checkout
         run: |
-          echo "--- data dir ---"
-          ls -la data || true
-          echo "--- reports dir ---"
-          ls -la reports || true
+          echo "--- data dir ---"; ls -la data || true
+          echo "--- reports dir ---"; ls -la reports || true
