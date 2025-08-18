@@ -1,130 +1,135 @@
 # scripts/compute_team_strengths.py
+from __future__ import annotations
 import json
-import math
-import os
-from datetime import datetime, timezone
-
-import numpy as np
+from pathlib import Path
+from typing import Tuple, Dict, Any
 import pandas as pd
 
-IN_CSV = "data/understat_matches.csv"
-OUT_JSON = "data/team_strengths.json"
 
-# Tunables via env
-HALF_LIFE_DAYS = float(os.getenv("TS_HALF_LIFE_DAYS", "90"))     # time-decay half-life
-RIDGE = float(os.getenv("TS_RIDGE", "5.0"))                       # regularisation strength
-MIN_ROWS = int(os.getenv("TS_MIN_ROWS", "500"))                   # need enough history
+U_PATH = Path("data/understat_matches.csv")
+FD_PATH = Path("data/fd_results.csv")
+OUT_PATH = Path("data/team_strengths.json")
 
-EPS = 1e-6
 
-def _decay_weight(deltas_days):
-    # weight = 0.5 ** (delta_days / half_life)
-    return np.power(0.5, deltas_days / HALF_LIFE_DAYS)
-
-def fit_ratings(df: pd.DataFrame):
+def _load_dataset() -> Tuple[pd.DataFrame, str]:
     """
-    Solve log(xG) ~ alpha + HA*home + atk_home - def_away (and symmetrically for away)
-    with ridge regularisation and sum(atk)=sum(def)=0 soft constraints.
+    Prefer Understat if present and has sufficient rows; else fall back to FD results.
+    Returns (normalized_df, source_name)
+    Columns on return: home, away, goals_h, goals_a, xg_h (optional), xg_a (optional)
     """
-    teams = sorted(set(df["home_team"]).union(df["away_team"]))
-    tidx = {t: i for i, t in enumerate(teams)}
-    n = len(teams)
+    if U_PATH.exists():
+        u = pd.read_csv(U_PATH)
+        if len(u) > 500:
+            df = u.rename(
+                columns={
+                    "date": "date",
+                    "home": "home",
+                    "away": "away",
+                    "goals_h": "goals_h",
+                    "goals_a": "goals_a",
+                    "xg_h": "xg_h",
+                    "xg_a": "xg_a",
+                }
+            ).copy()
+            print(f"[strengths] using Understat ({len(df)} rows)")
+            return df, "understat"
+        else:
+            print(f"[strengths] Understat present but too small ({len(u)} rows)")
 
-    # two observations per match (home xG, away xG)
-    m = len(df) * 2
-    # columns: [alpha, HA, atk(n), def(n)]
-    p = 2 + n + n
-    X = np.zeros((m + 2, p))  # +2 rows for soft constraints on sum atk/def
-    y = np.zeros(m + 2)
-    w = np.zeros(m + 2)
+    if FD_PATH.exists():
+        f = pd.read_csv(FD_PATH)
+        if len(f) > 300:
+            df = f.rename(
+                columns={
+                    "date": "date",
+                    "home": "home",
+                    "away": "away",
+                    "goals_h": "goals_h",
+                    "goals_a": "goals_a",
+                }
+            ).copy()
+            print(f"[strengths] using football-data ({len(df)} rows)")
+            return df, "fd"
+        else:
+            print(f"[strengths] football-data present but too small ({len(f)} rows)")
 
-    row = 0
-    for _, r in df.iterrows():
-        # weights by time decay
-        w_h = r["weight"]
-        w_a = r["weight"]
-        hi = tidx[r["home_team"]]
-        ai = tidx[r["away_team"]]
+    raise SystemExit(
+        "[strengths] No usable dataset found. "
+        "Expected data/understat_matches.csv (>500 rows) or data/fd_results.csv (>300 rows)."
+    )
 
-        # home xG row
-        X[row, 0] = 1.0                      # alpha
-        X[row, 1] = 1.0                      # HA
-        X[row, 2 + hi] = 1.0                 # atk_home
-        X[row, 2 + n + ai] = -1.0            # -def_away
-        y[row] = math.log(max(r["home_xg"], EPS))
-        w[row] = w_h
-        row += 1
 
-        # away xG row
-        X[row, 0] = 1.0
-        X[row, 1] = 0.0
-        X[row, 2 + ai] = 1.0
-        X[row, 2 + n + hi] = -1.0
-        y[row] = math.log(max(r["away_xg"], EPS))
-        w[row] = w_a
-        row += 1
+def _compute_strengths(df: pd.DataFrame) -> Dict[str, Any]:
+    # prefer xG if available
+    use_xg = "xg_h" in df.columns and "xg_a" in df.columns and df["xg_h"].notna().any()
 
-    # soft constraint: sum(atk)=0 and sum(def)=0 (very small target)
-    X[row, 2:2+n] = 1.0
-    y[row] = 0.0
-    w[row] = 0.01
-    row += 1
-    X[row, 2+n:2+2*n] = 1.0
-    y[row] = 0.0
-    w[row] = 0.01
+    if use_xg:
+        h_for = df["xg_h"].astype(float)
+        a_for = df["xg_a"].astype(float)
+    else:
+        h_for = df["goals_h"].astype(float)
+        a_for = df["goals_a"].astype(float)
 
-    # Weighted ridge: solve (X^T W X + λI)β = X^T W y
-    W = np.diag(w)
-    XtW = X.T @ W
-    A = XtW @ X
-    # Ridge penalty (don’t penalise alpha/HA too much)
-    reg = np.eye(p) * RIDGE
-    reg[0, 0] = RIDGE * 0.01   # alpha
-    reg[1, 1] = RIDGE * 0.05   # HA
-    b = XtW @ y
-    beta = np.linalg.solve(A + reg, b)
+    total_matches = len(df)
+    total_home_for = h_for.sum()
+    total_away_for = a_for.sum()
 
-    alpha = float(beta[0])
-    HA = float(beta[1])
-    atk = beta[2:2+n]
-    dfn = beta[2+n:2+2*n]
+    # league averages per team per game
+    league_for_pg = (total_home_for + total_away_for) / (2.0 * total_matches)
+    # home advantage factor: home_for_per_game / away_for_per_game
+    home_for_pg = total_home_for / total_matches
+    away_for_pg = total_away_for / total_matches
+    home_adv = max(0.9, min(1.3, (home_for_pg / max(away_for_pg, 1e-9))))
 
-    # centre to mean zero (numerical stability)
-    atk -= np.mean(atk)
-    dfn -= np.mean(dfn)
+    # build per-team numbers
+    teams = {}
+    teams_list = pd.unique(pd.concat([df["home"], df["away"]], ignore_index=True))
+    for t in teams_list:
+        home_rows = df["home"] == t
+        away_rows = df["away"] == t
 
-    # pack
-    out = {
-        "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "alpha": alpha,
-        "home_adv": HA,
-        "teams": {t: {"atk": float(atk[tidx[t]]), "def": float(dfn[tidx[t]])} for t in teams},
-        "meta": {
-            "half_life_days": HALF_LIFE_DAYS,
-            "ridge": RIDGE,
-            "rows_used": int(len(df)),
-        },
+        if use_xg:
+            gf = h_for[home_rows].sum() + a_for[away_rows].sum()
+            ga = a_for[home_rows].sum() + h_for[away_rows].sum()
+        else:
+            gf = df.loc[home_rows, "goals_h"].sum() + df.loc[away_rows, "goals_a"].sum()
+            ga = df.loc[home_rows, "goals_a"].sum() + df.loc[away_rows, "goals_h"].sum()
+
+        gp = home_rows.sum() + away_rows.sum()
+        if gp == 0:
+            continue
+
+        gf_pg = gf / gp
+        ga_pg = ga / gp
+
+        attack = float(gf_pg / max(league_for_pg, 1e-9))
+        defense = float(ga_pg / max(league_for_pg, 1e-9))  # <1 is better
+
+        teams[str(t)] = {
+            "attack": attack,
+            "defense": defense,
+            # keep aliases some generator variants expect
+            "att": attack,
+            "def": defense,
+        }
+
+    return {
+        "home_adv": float(home_adv),
+        "teams": teams,
+        "n_matches": int(total_matches),
+        "metric": "xg" if use_xg else "goals",
     }
-    return out
+
 
 def main():
-    if not os.path.exists(IN_CSV):
-        raise SystemExit(f"[strengths] missing {IN_CSV}. Run fetch_understat_xg first.")
-    df = pd.read_csv(IN_CSV)
-    if len(df) < MIN_ROWS:
-        raise SystemExit(f"[strengths] too few rows in {IN_CSV} ({len(df)} < {MIN_ROWS})")
+    df, source = _load_dataset()
+    strengths = _compute_strengths(df)
+    strengths["source"] = source
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with OUT_PATH.open("w", encoding="utf-8") as f:
+        json.dump(strengths, f, indent=2)
+    print(f"[strengths] wrote {OUT_PATH} (teams={len(strengths['teams'])}, source={source})")
 
-    # time decay
-    now = datetime.now(timezone.utc)
-    dt = pd.to_datetime(df["date_utc"], utc=True)
-    delta_days = (now - dt).dt.total_seconds() / 86400.0
-    df["weight"] = _decay_weight(delta_days)
-
-    out = fit_ratings(df)
-    os.makedirs("data", exist_ok=True)
-    with open(OUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(out, f, ensure_ascii=False, indent=2)
-    print(f"[strengths] wrote -> {OUT_JSON} with {len(out['teams'])} teams")
 
 if __name__ == "__main__":
     main()
