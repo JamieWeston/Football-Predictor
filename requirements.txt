@@ -1,14 +1,9 @@
-# Core data stack
-pandas==2.2.2
-numpy==1.26.4
-
-# HTTP / scraping
-requests>=2.32.3
-beautifulsoup4>=4.12.3
+numpy>=1.26,<2
+pandas>=2.2,<3
+scipy>=1.11,<2
+requests>=2.31
+beautifulsoup4>=4.12
 aiohttp>=3.9.5
-
-# Robust retry helper
-tenacity>=8.5.0
-
-# Headless browser to render Understat (JS)
-playwright>=1.46.0
+pytest>=7
+pytest-cov>=4
+git+https://github.com/amosbastian/understat.git@master
