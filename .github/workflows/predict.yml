@@ -30,35 +30,29 @@ jobs:
           python-version: "3.11"
 
       - name: Install deps
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt || true
+          # minimal fallbacks (in case requirements.txt is thin)
+          python - <<'PY'
+          import sys, subprocess
+          for pkg in ["requests"]:
+              try:
+                  __import__(pkg)
+              except ImportError:
+                  subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+          PY
 
-      # Optional: pull rolling match xG from Understat
-      - name: Fetch Understat xG
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-          # Adjust seasons/rate limiting if needed
-          US_SEASONS: "2023,2024,2025"
-          US_SLEEP_MS: "300"
-        run: python -u -m scripts.fetch_understat_xg
-
-      # Optional: compute team strengths from Understat rows
-      - name: Compute team strengths
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-        run: python -u -m scripts.compute_team_strengths
-
-      # ---- UPDATED BLOCK (unbuffered logs + statuses) ----
+      # ---- Key step: generate with unbuffered logging & strict guards
       - name: Generate predictions & tips
         env:
+          PYTHONUNBUFFERED: "1"                   # stream logs
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_WINDOW_DAYS: "14"            # bump to 21 while debugging if needed
-          FD_STATUSES: "SCHEDULED,TIMED"  # only future fixtures
-          PYTHONUNBUFFERED: "1"           # stream logs immediately
+          FD_WINDOW_DAYS: "21"                    # wide window to be safe
+          FD_STATUSES: "SCHEDULED,TIMED,POSTPONED"
         run: python -u -m scripts.generate
-      # ----------------------------------------------------
 
-      # Tiny guard so we notice empty output early
+      # Fail fast if the generator left an empty file
       - name: Smoke test – fail if no predictions written
         run: |
           python - <<'PY'
@@ -67,33 +61,31 @@ jobs:
           if not p.exists():
               print("[smoke] data/predictions.json not found")
               sys.exit(1)
-          data = json.loads(p.read_text())
-          n = len(data.get("predictions", []))
-          print(f"[smoke] predictions count: {n}")
-          if n == 0:
+          data = json.loads(p.read_text() or "{}")
+          preds = data.get("predictions", [])
+          print(f"[smoke] predictions count: {len(preds)}")
+          if not preds:
               sys.exit(1)
           PY
 
-      # Keep git clean in the PR
+      # Keep git clean – stop committing caches/noise
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-      # Auto-PR and auto-merge back to main
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update strengths, predictions and tips"
+          commit-message: "chore: update predictions"
           delete-branch: true
           merge: true
           merge-method: squash
 
-      # Just to help you verify artifacts in logs
-      - name: Post Checkout
+      - name: Post run – show output files
         run: |
           echo "--- data dir ---"; ls -la data || true
-          echo "--- reports dir ---"; ls -la reports || true
+          echo "--- head of predictions.json ---"; head -n 40 data/predictions.json || true
