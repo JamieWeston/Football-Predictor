@@ -1,119 +1,130 @@
 # scripts/compute_team_strengths.py
-import os
 import json
 import math
-import statistics
-from collections import defaultdict
-from datetime import datetime
+import os
+from datetime import datetime, timezone
 
-IN_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "understat_team_matches.json")
-OUT_STRENGTHS = os.path.join(os.path.dirname(__file__), "..", "data", "team_strengths.json")
-OUT_RATINGS = os.path.join(os.path.dirname(__file__), "..", "data", "team_ratings.json")
+import numpy as np
+import pandas as pd
 
-# How many most-recent matches per team to use
-MAX_MATCHES_PER_TEAM = int(os.getenv("US_MAX_MATCHES", "12"))
+IN_CSV = "data/understat_matches.csv"
+OUT_JSON = "data/team_strengths.json"
 
-# Fallback league xG per team if we can't compute a mean
-LEAGUE_FALLBACK_XG = float(os.getenv("LEAGUE_BASE_XG", "1.35"))
+# Tunables via env
+HALF_LIFE_DAYS = float(os.getenv("TS_HALF_LIFE_DAYS", "90"))     # time-decay half-life
+RIDGE = float(os.getenv("TS_RIDGE", "5.0"))                       # regularisation strength
+MIN_ROWS = int(os.getenv("TS_MIN_ROWS", "500"))                   # need enough history
 
+EPS = 1e-6
 
-def safe_mean(values, default):
-    """Return mean(values) ignoring None; default if empty."""
-    vals = [v for v in values if isinstance(v, (int, float))]
-    if not vals:
-        return default
-    return statistics.mean(vals)
+def _decay_weight(deltas_days):
+    # weight = 0.5 ** (delta_days / half_life)
+    return np.power(0.5, deltas_days / HALF_LIFE_DAYS)
 
+def fit_ratings(df: pd.DataFrame):
+    """
+    Solve log(xG) ~ alpha + HA*home + atk_home - def_away (and symmetrically for away)
+    with ridge regularisation and sum(atk)=sum(def)=0 soft constraints.
+    """
+    teams = sorted(set(df["home_team"]).union(df["away_team"]))
+    tidx = {t: i for i, t in enumerate(teams)}
+    n = len(teams)
+
+    # two observations per match (home xG, away xG)
+    m = len(df) * 2
+    # columns: [alpha, HA, atk(n), def(n)]
+    p = 2 + n + n
+    X = np.zeros((m + 2, p))  # +2 rows for soft constraints on sum atk/def
+    y = np.zeros(m + 2)
+    w = np.zeros(m + 2)
+
+    row = 0
+    for _, r in df.iterrows():
+        # weights by time decay
+        w_h = r["weight"]
+        w_a = r["weight"]
+        hi = tidx[r["home_team"]]
+        ai = tidx[r["away_team"]]
+
+        # home xG row
+        X[row, 0] = 1.0                      # alpha
+        X[row, 1] = 1.0                      # HA
+        X[row, 2 + hi] = 1.0                 # atk_home
+        X[row, 2 + n + ai] = -1.0            # -def_away
+        y[row] = math.log(max(r["home_xg"], EPS))
+        w[row] = w_h
+        row += 1
+
+        # away xG row
+        X[row, 0] = 1.0
+        X[row, 1] = 0.0
+        X[row, 2 + ai] = 1.0
+        X[row, 2 + n + hi] = -1.0
+        y[row] = math.log(max(r["away_xg"], EPS))
+        w[row] = w_a
+        row += 1
+
+    # soft constraint: sum(atk)=0 and sum(def)=0 (very small target)
+    X[row, 2:2+n] = 1.0
+    y[row] = 0.0
+    w[row] = 0.01
+    row += 1
+    X[row, 2+n:2+2*n] = 1.0
+    y[row] = 0.0
+    w[row] = 0.01
+
+    # Weighted ridge: solve (X^T W X + λI)β = X^T W y
+    W = np.diag(w)
+    XtW = X.T @ W
+    A = XtW @ X
+    # Ridge penalty (don’t penalise alpha/HA too much)
+    reg = np.eye(p) * RIDGE
+    reg[0, 0] = RIDGE * 0.01   # alpha
+    reg[1, 1] = RIDGE * 0.05   # HA
+    b = XtW @ y
+    beta = np.linalg.solve(A + reg, b)
+
+    alpha = float(beta[0])
+    HA = float(beta[1])
+    atk = beta[2:2+n]
+    dfn = beta[2+n:2+2*n]
+
+    # centre to mean zero (numerical stability)
+    atk -= np.mean(atk)
+    dfn -= np.mean(dfn)
+
+    # pack
+    out = {
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "alpha": alpha,
+        "home_adv": HA,
+        "teams": {t: {"atk": float(atk[tidx[t]]), "def": float(dfn[tidx[t]])} for t in teams},
+        "meta": {
+            "half_life_days": HALF_LIFE_DAYS,
+            "ridge": RIDGE,
+            "rows_used": int(len(df)),
+        },
+    }
+    return out
 
 def main():
-    # --- Load Understat rows ---
-    with open(IN_FILE, "r", encoding="utf-8") as f:
-        raw = json.load(f)
-    rows = raw.get("rows", [])
+    if not os.path.exists(IN_CSV):
+        raise SystemExit(f"[strengths] missing {IN_CSV}. Run fetch_understat_xg first.")
+    df = pd.read_csv(IN_CSV)
+    if len(df) < MIN_ROWS:
+        raise SystemExit(f"[strengths] too few rows in {IN_CSV} ({len(df)} < {MIN_ROWS})")
 
-    # Sort rows by (team, date) so that slicing last-N is the most recent window
-    rows_sorted = sorted(
-        (r for r in rows if r.get("team")),
-        key=lambda r: (r.get("team"), r.get("date") or "")
-    )
+    # time decay
+    now = datetime.now(timezone.utc)
+    dt = pd.to_datetime(df["date_utc"], utc=True)
+    delta_days = (now - dt).dt.total_seconds() / 86400.0
+    df["weight"] = _decay_weight(delta_days)
 
-    per_team_for = defaultdict(list)
-    per_team_against = defaultdict(list)
-    all_for = []
-    all_against = []
-
-    # Collect valid xG values
-    for r in rows_sorted:
-        team = r.get("team")
-        xf = r.get("xg_for")
-        xa = r.get("xg_against")
-
-        if isinstance(xf, (int, float)) and isinstance(xa, (int, float)):
-            per_team_for[team].append(xf)
-            per_team_against[team].append(xa)
-            all_for.append(xf)
-            all_against.append(xa)
-
-    # League baselines
-    league_xg_for = safe_mean(all_for, LEAGUE_FALLBACK_XG)
-    league_xg_against = safe_mean(all_against, LEAGUE_FALLBACK_XG)
-
-    strengths = {}
-    ratings = {}
-
-    for team in sorted(per_team_for.keys()):
-        last_for = per_team_for[team][-MAX_MATCHES_PER_TEAM:]
-        last_against = per_team_against[team][-MAX_MATCHES_PER_TEAM:]
-
-        tm_for = safe_mean(last_for, league_xg_for)
-        tm_against = safe_mean(last_against, league_xg_against)
-
-        att_str = tm_for / league_xg_for if league_xg_for > 0 else 1.0
-        # Def strength: higher is better (concede less than league avg)
-        def_str = league_xg_against / tm_against if tm_against > 0 else 1.0
-
-        strengths[team] = {
-            "attack": round(att_str, 4),
-            "defence": round(def_str, 4),
-            "team_xg_for": round(tm_for, 3),
-            "team_xg_against": round(tm_against, 3),
-            "league_xg_for": round(league_xg_for, 3),
-            "league_xg_against": round(league_xg_against, 3),
-            "sample": min(len(last_for), len(last_against)),
-        }
-
-    # Derive a scalar rating compatible with generate.py
-    # rating = log(attack) + log(defence); normalize to mean 0
-    raw_ratings = {
-        t: (math.log(max(1e-6, d["attack"])) + math.log(max(1e-6, d["defence"])))
-        for t, d in strengths.items()
-    }
-    mean_rating = safe_mean(list(raw_ratings.values()), 0.0)
-    for t, r in raw_ratings.items():
-        ratings[t] = round(r - mean_rating, 6)
-
-    os.makedirs(os.path.dirname(OUT_STRENGTHS), exist_ok=True)
-
-    with open(OUT_STRENGTHS, "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "generated_utc": datetime.utcnow().isoformat(),
-                "season_span": raw.get("seasons"),
-                "league_baseline_xg": {"for": league_xg_for, "against": league_xg_against},
-                "max_matches_per_team": MAX_MATCHES_PER_TEAM,
-                "teams": strengths,
-            },
-            f,
-            indent=2,
-        )
-
-    with open(OUT_RATINGS, "w", encoding="utf-8") as f:
-        json.dump(ratings, f, indent=2)
-
-    print(f"[strengths] baseline xG_for={league_xg_for:.3f} xG_against={league_xg_against:.3f}")
-    print(f"[strengths] wrote strengths -> {OUT_STRENGTHS}")
-    print(f"[strengths] wrote ratings   -> {OUT_RATINGS} (teams={len(ratings)})")
-
+    out = fit_ratings(df)
+    os.makedirs("data", exist_ok=True)
+    with open(OUT_JSON, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=2)
+    print(f"[strengths] wrote -> {OUT_JSON} with {len(out['teams'])} teams")
 
 if __name__ == "__main__":
     main()
