@@ -1,14 +1,3 @@
 {
-  "generated_utc": "2025-08-16T23:43:41.516148",
-  "season_span": [
-    2023,
-    2024,
-    2025
-  ],
-  "league_baseline_xg": {
-    "for": 1.35,
-    "against": 1.35
-  },
-  "max_matches_per_team": 12,
   "teams": {}
 }
