@@ -1,23 +1,38 @@
-# Python bytecode / caches
+# --- Python bytecode / caches ---
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
-
-# Virtual environments
-.venv/
-venv/
-
-# Tool caches
 .pytest_cache/
 .mypy_cache/
 
-# Local data caches (keep predictions JSONs in data/)
+# --- Virtual envs ---
+.venv/
+venv/
+
+# --- Local data not for git ---
 data/tmp/
 data/cache/
 
-# Packaging / build artifacts
-*.egg-info/
-dist/
+# --- Editors / OS ---
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# --- Build / dist ---
 build/
+dist/
+*.egg-info/
+
+# --- Binaries / archives (avoid committing these) ---
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# --- Jupyter checkpoints (if you add notebooks later) ---
+.ipynb_checkpoints/
