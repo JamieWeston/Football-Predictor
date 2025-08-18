@@ -35,16 +35,23 @@ jobs:
           echo "---- pip freeze (top) ----"
           pip freeze | head -n 50
 
+      # <<< CHANGED: no importlib.util here; use __import__ to avoid shadowing
       - name: Sanity check required modules
         run: |
           python - <<'PY'
-          import importlib, sys
+          import sys
           required = ["numpy","pandas","scipy","pytest","requests","pydantic"]
-          missing = [m for m in required if importlib.util.find_spec(m) is None]
+          missing = []
+          for mod in required:
+            try:
+              __import__(mod)
+            except Exception as e:
+              print(f"Missing {mod}: {e}", file=sys.stderr)
+              missing.append(mod)
           if missing:
-              print("ERROR: missing modules:", missing, file=sys.stderr)
-              sys.exit(1)
-          print("All required modules present:", required)
+            print("ERROR: missing modules:", ", ".join(missing), file=sys.stderr)
+            sys.exit(1)
+          print("All required modules present:", ", ".join(required))
           PY
 
       - name: Ensure package import path (if tests import 'plpred')
@@ -63,3 +70,4 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         run: |
           pytest -q
+
