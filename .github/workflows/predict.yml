@@ -33,41 +33,35 @@ jobs:
         run: python -m pip install --upgrade pip setuptools wheel
 
       - name: Install deps
-        run: pip install --no-cache-dir -r requirements.txt
+        run: pip install -r requirements.txt
 
-      # 1) Fetch rolling team xG from Understat
+      # >>> THIS IS THE STEP YOU ASKED FOR (fetch at least two seasons) <<<
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_LEAGUE: "EPL"       # internal label you use
-          US_SEASONS: "2023,2024,2025"
-          US_SLEEP_MS: "300"
+          US_SEASONS: "2023,2024,2025"   # ensure 2+ seasons so we have >500 rows
         run: python -m scripts.fetch_understat_xg
 
-      # 2) Compute team strengths from Understat rows
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # 3) Generate predictions with strengths
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          FD_WINDOW_DAYS: "14"            # you can bump while debugging
-          FD_STATUSES: "SCHEDULED,TIMED"  # future fixtures only
+          FD_WINDOW_DAYS: "14"
+          FD_STATUSES: "SCHEDULED,TIMED"
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # stop committing caches
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-      # 4) Create PR and auto-merge it back into main
-      - name: Create Pull Request
+      - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
@@ -80,5 +74,7 @@ jobs:
 
       - name: Post Checkout
         run: |
-          echo "--- data dir ---";    ls -la data || true
-          echo "--- reports dir ---"; ls -la reports || true
+          echo "--- data dir ---"
+          ls -la data || true
+          echo "--- reports dir ---"
+          ls -la reports || true
