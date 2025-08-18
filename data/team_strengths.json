@@ -1,14 +1,214 @@
 {
-  "generated_utc": "2025-08-16T23:43:41.516148",
-  "season_span": [
-    2023,
-    2024,
-    2025
-  ],
-  "league_baseline_xg": {
-    "for": 1.35,
-    "against": 1.35
-  },
-  "max_matches_per_team": 12,
-  "teams": {}
+  "league_avg_gpg": 1.442,
+  "home_adv": 1.095,
+  "draw_scale": 1.1,
+  "teams": {
+    "AFC Bournemouth": {
+      "att": 1.0989,
+      "def": 1.1367,
+      "att_home": 0.904,
+      "def_home": 1.5838,
+      "att_away": 1.28,
+      "def_away": 0.9006,
+      "games": 17
+    },
+    "Arsenal FC": {
+      "att": 1.3313,
+      "def": 1.6018,
+      "att_home": 1.2474,
+      "def_home": 1.4658,
+      "att_away": 1.4076,
+      "def_away": 1.7494,
+      "games": 17
+    },
+    "Aston Villa FC": {
+      "att": 1.0727,
+      "def": 1.211,
+      "att_home": 1.1921,
+      "def_home": 1.5993,
+      "att_away": 0.9432,
+      "def_away": 0.9587,
+      "games": 17
+    },
+    "Brentford FC": {
+      "att": 1.2631,
+      "def": 0.9552,
+      "att_home": 1.5663,
+      "def_home": 0.728,
+      "att_away": 1.0028,
+      "def_away": 1.3048,
+      "games": 17
+    },
+    "Brighton & Hove Albion FC": {
+      "att": 1.3352,
+      "def": 0.8935,
+      "att_home": 1.1563,
+      "def_home": 0.9194,
+      "att_away": 1.5389,
+      "def_away": 0.8657,
+      "games": 17
+    },
+    "Burnley FC": {
+      "att": 0.6,
+      "def": 0.6,
+      "att_home": 0.5,
+      "def_home": 0.5977,
+      "att_away": 0.5,
+      "def_away": 0.5977,
+      "games": 0
+    },
+    "Chelsea FC": {
+      "att": 1.1767,
+      "def": 1.4453,
+      "att_home": 1.3246,
+      "def_home": 1.9,
+      "att_away": 1.0093,
+      "def_away": 1.1089,
+      "games": 17
+    },
+    "Crystal Palace FC": {
+      "att": 1.004,
+      "def": 1.1749,
+      "att_home": 1.1084,
+      "def_home": 0.9816,
+      "att_away": 0.9141,
+      "def_away": 1.4145,
+      "games": 17
+    },
+    "Everton FC": {
+      "att": 0.876,
+      "def": 1.3111,
+      "att_home": 1.2222,
+      "def_home": 1.2516,
+      "att_away": 0.5724,
+      "def_away": 1.3681,
+      "games": 17
+    },
+    "Fulham FC": {
+      "att": 1.0221,
+      "def": 0.9428,
+      "att_home": 1.0113,
+      "def_home": 0.7847,
+      "att_away": 1.0317,
+      "def_away": 1.1478,
+      "games": 17
+    },
+    "Ipswich Town FC": {
+      "att": 0.6578,
+      "def": 0.6293,
+      "att_home": 0.5849,
+      "def_home": 0.5581,
+      "att_away": 0.7292,
+      "def_away": 0.7192,
+      "games": 16
+    },
+    "Leeds United FC": {
+      "att": 0.6,
+      "def": 1.8,
+      "att_home": 0.5,
+      "def_home": 1.9,
+      "att_away": 0.5,
+      "def_away": 1.9,
+      "games": 0
+    },
+    "Leicester City FC": {
+      "att": 0.6241,
+      "def": 0.6909,
+      "att_home": 0.6506,
+      "def_home": 0.7891,
+      "att_away": 0.5983,
+      "def_away": 0.6165,
+      "games": 16
+    },
+    "Liverpool FC": {
+      "att": 1.753,
+      "def": 1.1558,
+      "att_home": 1.9,
+      "def_home": 1.322,
+      "att_away": 1.5585,
+      "def_away": 1.0103,
+      "games": 17
+    },
+    "Manchester City FC": {
+      "att": 1.5358,
+      "def": 1.4963,
+      "att_home": 1.699,
+      "def_home": 1.2386,
+      "att_away": 1.3861,
+      "def_away": 1.8495,
+      "games": 17
+    },
+    "Manchester United FC": {
+      "att": 0.8315,
+      "def": 1.0846,
+      "att_home": 0.8092,
+      "def_home": 1.0591,
+      "att_away": 0.8557,
+      "def_away": 1.1137,
+      "games": 17
+    },
+    "Newcastle United FC": {
+      "att": 1.3581,
+      "def": 1.3619,
+      "att_home": 1.708,
+      "def_home": 1.4477,
+      "att_away": 1.0321,
+      "def_away": 1.2906,
+      "games": 17
+    },
+    "Nottingham Forest FC": {
+      "att": 1.2549,
+      "def": 1.0107,
+      "att_home": 1.1681,
+      "def_home": 1.2399,
+      "att_away": 1.3545,
+      "def_away": 0.834,
+      "games": 17
+    },
+    "Southampton FC": {
+      "att": 0.6,
+      "def": 0.6231,
+      "att_home": 0.5,
+      "def_home": 0.5859,
+      "att_away": 0.5,
+      "def_away": 0.6672,
+      "games": 16
+    },
+    "Sunderland AFC": {
+      "att": 1.8,
+      "def": 1.8,
+      "att_home": 1.9,
+      "def_home": 1.9,
+      "att_away": 1.9,
+      "def_away": 1.9,
+      "games": 0
+    },
+    "Tottenham Hotspur FC": {
+      "att": 1.4013,
+      "def": 0.8454,
+      "att_home": 1.5962,
+      "def_home": 0.829,
+      "att_away": 1.1875,
+      "def_away": 0.864,
+      "games": 17
+    },
+    "West Ham United FC": {
+      "att": 0.8937,
+      "def": 0.9407,
+      "att_home": 0.9547,
+      "def_home": 0.8819,
+      "att_away": 0.841,
+      "def_away": 0.9982,
+      "games": 17
+    },
+    "Wolverhampton Wanderers FC": {
+      "att": 1.063,
+      "def": 0.8446,
+      "att_home": 1.0287,
+      "def_home": 0.872,
+      "att_away": 1.1023,
+      "def_away": 0.8151,
+      "games": 17
+    }
+  }
 }
