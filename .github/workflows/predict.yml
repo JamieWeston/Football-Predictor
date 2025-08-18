@@ -3,10 +3,10 @@ name: Predict & open PR (auto-merge)
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 6 * * *"     # daily 06:30 UTC
-    - cron: "30 22 * * SAT"  # Sat night top-up (UTC)
-    - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
-    - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
+    - cron: "30 6 * * *"
+    - cron: "30 22 * * SAT"
+    - cron: "30 22 * * SUN"
+    - cron: "30 8 * * MON"
 
 permissions:
   contents: write
@@ -35,37 +35,59 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # ====== FETCH UNDERSTAT xG (lower-case env, multi-season) ======
-      - name: Fetch Understat xG
+      # -------- OPTIONAL: Try Understat (do not fail the job) --------
+      - name: Fetch Understat xG (best-effort)
+        continue-on-error: true
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_LEAGUE: "epl"              # lower-case is fine; script upper-cases for URL
-          US_SEASONS: "2023,2024,2025"  # multiple seasons -> plenty of rows
+          US_LEAGUE: "epl"
+          US_SEASONS: "2023,2024,2025"
           US_SLEEP_MS: "300"
-        run: python -m scripts.fetch_understat_xg
+        run: |
+          if [ -f scripts/fetch_understat_xg.py ]; then
+            python -m scripts.fetch_understat_xg || true
+          else
+            echo "No scripts/fetch_understat_xg.py present; skipping."
+          fi
 
-      # Quick sanity output so you can verify row counts in logs
-      - name: Sanity check Understat CSV
+      - name: Sanity check Understat CSV (non-fatal)
+        run: |
+          if [ -f data/understat_matches.csv ]; then
+            python - <<'PY'
+            import pandas as pd
+            df = pd.read_csv("data/understat_matches.csv")
+            print(f"[sanity] understat rows={len(df)} seasons=", sorted(df['season'].dropna().unique().tolist())[:8])
+            PY
+          else
+            echo "[sanity] No understat CSV; will rely on football-data fallback."
+          fi
+
+      # -------- ALWAYS: fetch FD fallback --------
+      - name: Fetch football-data results (fallback)
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          FD_SEASONS: "2023,2024,2025"
+          FD_SLEEP_MS: "300"
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m scripts.fetch_fd_results
+
+      - name: Sanity check FD CSV
         run: |
           python - <<'PY'
-          import os, pandas as pd
-          p = "data/understat_matches.csv"
+          import pandas as pd, os
+          p = "data/fd_results.csv"
           if not os.path.exists(p):
-              raise SystemExit("CSV missing: " + p)
+            raise SystemExit("Missing FD CSV at " + p)
           df = pd.read_csv(p)
-          seas = sorted({int(s) for s in df['season'].dropna().unique().tolist()})
-          print(f"[sanity] understat csv rows={len(df)} seasons={seas[:8]}")
-          if len(df) <= 500:
-              print("[sanity] WARN: rows <= 500; strengths may skip. Consider adding seasons.")
+          print(f"[sanity] fd rows={len(df)} seasons=", sorted(df['season'].dropna().unique().tolist())[:8])
           PY
 
-      # ====== BUILD STRENGTHS FROM UNDERSTAT ROWS ======
+      # -------- Build strengths from whichever dataset is available --------
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # ====== PREDICTIONS & TIPS ======
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -75,28 +97,23 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # Clean noisy Python caches from the PR
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-      # ====== CREATE & AUTO-MERGE PR ======
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update Understat strengths and predictions"
+          commit-message: "chore: update strengths and predictions"
           delete-branch: true
           merge: true
           merge-method: squash
 
-      # (optional) quick directory listing for debugging
       - name: Post Checkout
         run: |
-          echo "--- data dir ---"
-          ls -la data || true
-          echo "--- reports dir ---"
-          ls -la reports || true
+          echo "--- data dir ---"; ls -la data || true
+          echo "--- reports dir ---"; ls -la reports || true
