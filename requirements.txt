@@ -1,13 +1,14 @@
-# core
-numpy==1.26.4
+# Core data stack
 pandas==2.2.2
-scipy==1.13.1
+numpy==1.26.4
 
-# http + parsing (still useful if/when Understat cooperates)
-requests==2.32.3
-beautifulsoup4==4.12.3
-lxml==5.2.2
+# HTTP / scraping
+requests>=2.32.3
+beautifulsoup4>=4.12.3
+aiohttp>=3.9.5
 
-# pinned transitive deps
-python-dateutil==2.9.0.post0
-pytz==2024.1
+# Robust retry helper
+tenacity>=8.5.0
+
+# Headless browser to render Understat (JS)
+playwright>=1.46.0
