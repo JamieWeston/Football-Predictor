@@ -1,13 +1,18 @@
-# Core scientific stack
-pandas==2.2.2
+# --- Core numerics / stats
 numpy==1.26.4
+pandas==2.2.2
 scipy==1.13.1
 
-# Async HTTP client
+# --- HTTP clients
+requests==2.32.3
 aiohttp==3.9.5
 
-# Understat Python wrapper (latest on PyPI)
+# --- Understat API wrapper (PyPI version that works on Python 3.11)
 understat==0.1.12
 
-# Small helper used by pandas/date handling
+# --- Time handling (used by pandas)
 python-dateutil==2.9.0.post0
+pytz==2024.1
+
+# --- Utilities (optional but handy for progress bars)
+tqdm==4.66.4
