@@ -1,142 +1,132 @@
 # scripts/fetch_understat_xg.py
-"""
-Fetch Understat league matches (with xG/goals) for one or more seasons and
-write them to data/understat_matches.csv.
-
-Env vars:
-- US_LEAGUE   : short league code (e.g., 'epl'). Case-insensitive.
-- US_SEASONS  : comma-separated seasons, e.g. '2023,2024,2025'
-- US_SLEEP_MS : optional polite delay between seasons (default 300ms)
-"""
-
 from __future__ import annotations
 import os
-import re
-import json
-import time
 from pathlib import Path
-from typing import Iterable, List, Dict, Any
-import requests
+from typing import List, Dict
 import pandas as pd
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
 
+DATA = (Path(__file__).resolve().parent.parent / "data").absolute()
+DATA.mkdir(parents=True, exist_ok=True)
+OUT = DATA / "understat_matches.csv"
 
-def _env(name: str, default: str) -> str:
-    v = os.environ.get(name)
-    return v.strip() if v else default
+LEAGUE = os.getenv("US_LEAGUE", "EPL")          # EPL, La_liga, etc. (Understat naming; EPL is fine)
+SEASONS = [s.strip() for s in os.getenv("US_SEASONS", "2023,2024,2025").split(",") if s.strip()]
 
+def _extract_rows(page, season: str) -> List[Dict]:
+    """Run JS inside the page to convert matchesData (+teamsData) into a simple list of dicts."""
+    return page.evaluate("""(season) => {
+        try {
+            const tmap = {};
+            if (typeof teamsData !== 'undefined') {
+                Object.values(teamsData).forEach(t => {
+                    const id = t.id ?? t.team_id ?? t.id_team ?? t.id;
+                    const title = t.title ?? t.team_title ?? t.name ?? t.short_title ?? t.title;
+                    tmap[id] = title;
+                });
+            }
 
-def _parse_matches_from_html(html: str) -> List[Dict[str, Any]]:
-    """
-    Understat embeds JSON into a JS variable:
-      var matchesData = JSON.parse('...escaped...');
-    or sometimes:
-      var matchesData = [...];
+            const md = (typeof matchesData !== 'undefined') ? matchesData : [];
+            const rows = md.map(m => {
+                const date = m.datetime || m.date || m.added || null;
 
-    This extracts and returns a list of dicts for matches.
-    """
-    # Pattern 1: JSON.parse('...') form
-    m = re.search(r"var\s+matchesData\s*=\s*JSON\.parse\('([^']+)'\)", html)
-    if m:
-        raw = m.group(1)
-        # Understat escapes quotes; decode twice: JS-string -> JSON
-        unescaped = bytes(raw, "utf-8").decode("unicode_escape")
-        return json.loads(unescaped)
+                const teamName = (obj, idKey, objKey, altKey) =>
+                    (obj[objKey]?.title) ?? (tmap[obj[idKey]]) ?? obj[altKey] ?? null;
 
-    # Pattern 2: direct JSON array
-    m = re.search(r"var\s+matchesData\s*=\s*(\[[\s\S]*?\]);", html)
-    if m:
-        return json.loads(m.group(1))
+                const home = teamName(m, 'team_h', 'team_h', 'home_team')
+                          || teamName(m, 'h', 'h', 'h_title') || m.home || null;
 
-    raise RuntimeError("Could not locate matchesData in page")
+                const away = teamName(m, 'team_a', 'team_a', 'away_team')
+                          || teamName(m, 'a', 'a', 'a_title') || m.away || null;
 
+                const xg = m.xG ?? m.xg ?? null;
+                const goals = m.goals ?? m.score ?? null;
 
-def fetch_league_season(league_code: str, season: int) -> pd.DataFrame:
-    league_path = league_code.upper()  # Understat expects 'EPL', 'La_liga', etc.
-    url = f"https://understat.com/league/{league_path}/{season}"
+                const xgh = Array.isArray(xg) ? (+xg[0]) :
+                            + (m.xG_home ?? m.xG_h ?? m.xg1 ?? m.xG1 ?? 0);
 
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/122.0 Safari/537.36"
+                const xga = Array.isArray(xg) ? (+xg[1]) :
+                            + (m.xG_away ?? m.xG_a ?? m.xg2 ?? m.xG2 ?? 0);
+
+                const gh = Array.isArray(goals) ? (+goals[0]) :
+                           + (m.goals_home ?? m.goals_h ?? (goals?.h ?? goals?.home) ?? 0);
+
+                const ga = Array.isArray(goals) ? (+goals[1]) :
+                           + (m.goals_away ?? m.goals_a ?? (goals?.a ?? goals?.away) ?? 0);
+
+                return {season, date, home, away, home_xg: xgh, away_xg: xga, home_goals: gh, away_goals: ga};
+            });
+
+            return rows.filter(r => r.home && r.away && r.date);
+        } catch (e) {
+            return [];
+        }
+    }""", season)
+
+class NoDataError(RuntimeError):
+    pass
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((NoDataError, PWTimeoutError, RuntimeError)),
+)
+def _fetch_one_season(play, league: str, season: str) -> pd.DataFrame:
+    url = f"https://understat.com/league/{league}/{season}"
+    print(f"[understat] fetching {url}")
+
+    browser = play.chromium.launch(headless=True)
+    try:
+        context = browser.new_context(
+            user_agent=("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"),
+            viewport={"width": 1366, "height": 900},
         )
-    }
-    resp = requests.get(url, headers=headers, timeout=30)
-    resp.raise_for_status()
+        # Speed-up: block images/fonts/media
+        context.route("**/*", lambda route: route.abort()
+                      if route.request.resource_type in {"image", "media", "font"} else route.continue_())
 
-    matches = _parse_matches_from_html(resp.text)
-    rows = []
-    for m in matches:
-        # Typical structure:
-        # {
-        #   "id":"XXXXX",
-        #   "datetime":"2024-08-17 14:00:00",
-        #   "isResult":true,
-        #   "h":{"id":"89","title":"Manchester United","short_title":"Man United"},
-        #   "a":{"id":"80","title":"Aston Villa","short_title":"Aston Villa"},
-        #   "goals":{"h":2,"a":1},
-        #   "xG":{"h":1.54,"a":1.12},
-        #   ...
-        # }
-        # Not all games have results/xG yet (future fixtures). Keep rows that have xG.
-        try:
-            home = m["h"]["title"]
-            away = m["a"]["title"]
-            # xG may be strings; coerce to float
-            xg_h = float(m["xG"]["h"]) if m.get("xG") else None
-            xg_a = float(m["xG"]["a"]) if m.get("xG") else None
-            g_h = int(m["goals"]["h"]) if m.get("goals") else None
-            g_a = int(m["goals"]["a"]) if m.get("goals") else None
-            dt = m.get("datetime")
+        page = context.new_page()
+        page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
-            # Only keep rows where xG is present (played matches)
-            if xg_h is not None and xg_a is not None:
-                rows.append(
-                    {
-                        "season": season,
-                        "date": dt,
-                        "home": home,
-                        "away": away,
-                        "goals_h": g_h,
-                        "goals_a": g_a,
-                        "xg_h": xg_h,
-                        "xg_a": xg_a,
-                    }
-                )
-        except Exception:
-            # be permissive; skip malformed rows rather than failing the run
-            continue
+        # Wait until matchesData is present and populated
+        page.wait_for_function(
+            "typeof matchesData !== 'undefined' && Array.isArray(matchesData) && matchesData.length > 0",
+            timeout=30000
+        )
 
-    return pd.DataFrame(rows)
+        rows = _extract_rows(page, season)
+        if not rows:
+            raise NoDataError(f"matchesData empty for season {season}")
 
+        df = pd.DataFrame(rows)
+        print(f"[understat] season {season}: {len(df)} rows")
+        return df
+    finally:
+        browser.close()
 
 def main():
-    league = _env("US_LEAGUE", "epl")          # case-insensitive
-    seasons_s = _env("US_SEASONS", "2024,2025")
-    sleep_ms = int(_env("US_SLEEP_MS", "300"))
+    DATA.mkdir(parents=True, exist_ok=True)
 
-    seasons: Iterable[int] = [int(s.strip()) for s in seasons_s.split(",") if s.strip()]
+    with sync_playwright() as play:
+        frames = []
+        for s in SEASONS:
+            try:
+                df = _fetch_one_season(play, LEAGUE, s)
+                frames.append(df)
+            except Exception as e:
+                print(f"[understat] WARN: season {s} failed: {e}")
 
-    all_frames: List[pd.DataFrame] = []
-    for s in seasons:
-        try:
-            df = fetch_league_season(league, s)
-            print(f"[understat] season {s}: rows={len(df)}")
-            all_frames.append(df)
-        except Exception as e:
-            print(f"[understat] WARN: failed to parse season {s}: {e}")
-        time.sleep(sleep_ms / 1000.0)
+    if not frames:
+        print("[understat] ERROR: collected 0 rows across all seasons")
+        # Do NOT raise here; downstream will fallback to football-data.
+        return
 
-    if not all_frames:
-        raise SystemExit("[understat] ERROR: collected 0 rows across all seasons")
-
-    out = pd.concat(all_frames, ignore_index=True)
-    out_dir = Path("data")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / "understat_matches.csv"
-    out.to_csv(out_path, index=False)
-    print(f"[understat] wrote total {len(out)} rows to {out_path}")
-
+    all_df = pd.concat(frames, ignore_index=True)
+    all_df.sort_values(["season", "date"], inplace=True, ignore_index=True)
+    all_df.to_csv(OUT, index=False)
+    print(f"[understat] wrote {OUT} ({len(all_df)} rows)")
 
 if __name__ == "__main__":
     main()
