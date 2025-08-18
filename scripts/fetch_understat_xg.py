@@ -1,120 +1,77 @@
 # scripts/fetch_understat_xg.py
 import os
-import json
 import asyncio
-import datetime as dt
-from typing import List, Dict, Any
-
 import aiohttp
+import pandas as pd
+from datetime import datetime, timezone
 from understat import Understat
 
+OUT_CSV = "data/understat_matches.csv"
+LEAGUE = "epl"  # Understat slug
+# Comma-separated list in env, newest last so the most recent season is last
+SEASONS = [s.strip() for s in os.getenv("US_SEASONS", "2023,2024,2025").split(",") if s.strip()]
 
-LEAGUE = "epl"  # Understat code for the Premier League
-OUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "understat_team_matches.json")
-
-
-def _season_years() -> List[int]:
-    """
-    Seasons to fetch. Accepts env var US_SEASONS="2022,2023,2024".
-    Defaults to last 3 seasons based on 'August season rollover'.
-    """
-    env = os.getenv("US_SEASONS")
-    if env:
-        nums = []
-        for tok in env.split(","):
-            tok = tok.strip()
-            if tok.isdigit():
-                nums.append(int(tok))
-        if nums:
-            return nums
-
-    today = dt.datetime.utcnow()
-    base = today.year if today.month >= 8 else today.year - 1
-    return [base - 2, base - 1, base]
-
-
-async def _fetch_one_team(us: Understat, team_name: str, season: int) -> List[Dict[str, Any]]:
-    """
-    Use Understat.get_team_results(team_name, season)
-    Returns match rows with xG / xGA / h_a ('h' or 'a'), opponent, date, scored, conceded.
-    """
-    try:
-        res = await us.get_team_results(team_name, season)
-    except Exception as e:
-        print(f"[warn] get_team_results({team_name}, {season}) failed: {e}")
-        return []
-
+async def _fetch():
+    os.makedirs("data", exist_ok=True)
     rows = []
-    for r in res:
-        # Be defensive about keys / types
-        date = r.get("date") or r.get("datetime") or ""
-        date = date.split(" ")[0] if date else ""
-        h_a = (r.get("h_a") or "").lower()  # 'h' or 'a'
-        is_home = h_a == "h"
-
-        def _f(x):
-            try:
-                return float(x)
-            except Exception:
-                return None
-
-        def _i(x):
-            try:
-                return int(x)
-            except Exception:
-                return None
-
-        rows.append({
-            "season": season,
-            "date": date,
-            "team": r.get("team") or team_name,
-            "opponent": r.get("opponent") or r.get("opponent_title") or "",
-            "is_home": is_home,
-            "xg_for": _f(r.get("xG")),
-            "xg_against": _f(r.get("xGA")),
-            "goals_for": _i(r.get("scored")),
-            "goals_against": _i(r.get("conceded")),
-        })
-    return rows
-
-
-async def _fetch(seasons: List[int]) -> List[Dict[str, Any]]:
-    """
-    Loop seasons; for each season, fetch EPL teams and then per-team results.
-    """
-    out: List[Dict[str, Any]] = []
-
-    # Optional gentle throttle between API calls
-    sleep_ms = int(os.getenv("US_SLEEP_MS", "0"))
-
     async with aiohttp.ClientSession() as session:
-        us = Understat(session)
+        u = Understat(session)
+        for season in SEASONS:
+            teams = await u.get_teams(LEAGUE, season)
+            for t in teams:
+                tid = t["id"]
+                name = t["title"]
+                # Team results contain xG/xGA per match, plus H/A, date, goals
+                res = await u.get_team_results(tid, season)
+                for m in res:
+                    try:
+                        date_utc = datetime.fromisoformat(m["datetime"]).replace(tzinfo=timezone.utc)
+                    except Exception:
+                        date_utc = datetime.strptime(m["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                    row = dict(
+                        season=int(season),
+                        match_id=int(m["id"]),
+                        date_utc=date_utc.isoformat(),
+                        side="home" if m["h_a"] == "h" else "away",
+                        team=name,
+                        opponent=m["opponent"],
+                        goals_for=float(m["goals"]),
+                        goals_against=float(m["goals_against"]),
+                        xg_for=float(m["xG"]),
+                        xg_against=float(m["xGA"]),
+                        home=1 if m["h_a"] == "h" else 0,
+                    )
+                    rows.append(row)
 
-        for s in seasons:
-            # get_teams requires league + season
-            teams = await us.get_teams(LEAGUE, s)
-            team_names = sorted({t.get("title") for t in teams if t.get("title")})
-            print(f"[understat] {len(team_names)} teams for season {s}")
+    df = pd.DataFrame(rows)
+    # Build one row per match (merge home/away rows)
+    # Key by match_id; pivot the two sides onto home/away
+    # Keep only Premier League (Understat results here are already league matches)
+    # Build tidy output
+    # First, pick home and away rows
+    homes = df[df["home"] == 1].copy()
+    aways = df[df["home"] == 0].copy()
+    homes = homes.add_prefix("h_")
+    aways = aways.add_prefix("a_")
+    merged = pd.merge(homes, aways, left_on="h_match_id", right_on="a_match_id", how="inner")
 
-            for name in team_names:
-                rows = await _fetch_one_team(us, name, s)
-                out.extend(rows)
-                if sleep_ms > 0:
-                    await asyncio.sleep(sleep_ms / 1000.0)
+    out = pd.DataFrame({
+        "match_id": merged["h_match_id"].astype(int),
+        "season": merged["h_season"].astype(int),
+        "date_utc": merged["h_date_utc"],
+        "home_team": merged["h_team"],
+        "away_team": merged["a_team"],
+        "home_goals": merged["h_goals_for"].astype(float),
+        "away_goals": merged["a_goals_for"].astype(float),
+        "home_xg": merged["h_xg_for"].astype(float),
+        "away_xg": merged["a_xg_for"].astype(float),
+    }).drop_duplicates("match_id").sort_values("date_utc")
 
-    return out
-
+    out.to_csv(OUT_CSV, index=False)
+    print(f"[understat] wrote {len(out)} rows -> {OUT_CSV}")
 
 def main():
-    seasons = _season_years()
-    print(f"[understat] seasons: {seasons}")
-    rows = asyncio.run(_fetch(seasons))
-
-    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
-    with open(OUT_PATH, "w", encoding="utf-8") as f:
-        json.dump({"seasons": seasons, "rows": rows}, f, ensure_ascii=False, indent=2)
-    print(f"[understat] wrote {len(rows)} rows -> {OUT_PATH}")
-
+    asyncio.run(_fetch())
 
 if __name__ == "__main__":
     main()
