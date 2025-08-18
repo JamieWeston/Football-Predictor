@@ -1,83 +1,108 @@
 name: Predict & open PR (auto-merge, robust)
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Triggers
+# - Manual: Actions tab will show the “Run workflow” button (workflow_dispatch)
+# - Scheduled: Runs at set UTC times (cron)
+# - Push: Re-run automatically when you change model/scripts/requirements/workflow
+# - Repo dispatch (optional): trigger from API if ever needed
+# ──────────────────────────────────────────────────────────────────────────────
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}                         # <-- ensures Run button is visible
   schedule:
-    - cron: "30 6 * * *"     # daily 06:30 UTC
-    - cron: "30 22 * * SAT"  # Sat night top-up (UTC)
-    - cron: "30 22 * * SUN"  # Sun night top-up (UTC)
-    - cron: "30 8 * * MON"   # Mon morning tidy-up (UTC)
+    - cron: "30 06 * * *"                      # daily 06:30 UTC
+    - cron: "30 22 * * SAT"                    # Sat night top-up UTC
+    - cron: "30 22 * * SUN"                    # Sun night top-up UTC
+    - cron: "30 08 * * MON"                    # Monday tidy-up UTC
+  push:
+    paths:
+      - "scripts/**"
+      - "data/**"
+      - "requirements.txt"
+      - ".github/workflows/predict.yml"
+  repository_dispatch:
+    types: [predict-run]
 
+# GitHub token perms for PR + content updates
 permissions:
   contents: write
   pull-requests: write
 
+env:
+  TZ: UTC
+
 jobs:
   predict:
+    name: Build strengths ➜ predictions ➜ PR (auto-merge)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     concurrency:
       group: predict
       cancel-in-progress: true
 
     steps:
+      # ── 1) Checkout repo (must be on default branch for schedule to trigger)
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # ── 2) Python toolchain
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Upgrade pip
+      - name: Upgrade pip tooling
         run: python -m pip install --upgrade pip setuptools wheel
 
       - name: Install deps
         run: |
           pip install -r requirements.txt
+          python -V
+          pip --version
+          pip freeze | tail -n 50
 
-      # --- BEST-EFFORT Understat fetch (non-fatal if empty) -------------------
+      # ── 3) Best-effort Understat (non-fatal)
       - name: Fetch Understat xG (best-effort)
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_SEASONS: "2023,2024,2025"
-          US_LEAGUE: "epl"
+          US_SEASONS: "2023,2024,2025"   # try multiple seasons for volume
+          US_LEAGUE: "epl"               # lower-case league code
         run: |
           set -e
           python -m scripts.fetch_understat_xg || true
-          test -f data/understat_matches.csv && wc -l data/understat_matches.csv || true
+          test -f data/understat_matches.csv && echo "[ls] understat:" && wc -l data/understat_matches.csv || echo "[ls] no understat csv"
 
       - name: Sanity check Understat CSV (non-fatal)
+        continue-on-error: true
         run: |
           if [ -f data/understat_matches.csv ]; then
             python - <<'PY'
 import pandas as pd
 from pathlib import Path
 p = Path("data/understat_matches.csv")
-try:
-    df = pd.read_csv(p)
-    print(f"[sanity] understat rows: {len(df)}")
-except Exception as e:
-    print(f"[sanity] understat not readable: {e}")
+df = pd.read_csv(p)
+print(f"[sanity] understat rows: {len(df)}; cols: {list(df.columns)[:8]}...")
 PY
           fi
 
-      # --- ALWAYS create the fallback results CSV -----------------------------
+      # ── 4) Always create the fallback results from football-data.org
       - name: Fetch football-data results (fallback)
         env:
           PYTHONPATH: ${{ github.workspace }}
           FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
         run: |
           python -m scripts.fetch_fd_results
-          test -f data/fd_results.csv && wc -l data/fd_results.csv || true
+          test -f data/fd_results.csv && echo "[ls] fd_results:" && wc -l data/fd_results.csv || echo "[ls] no fd_results csv"
 
-      # --- Compute strengths (uses Understat if available, else fallback) -----
+      # ── 5) Compute strengths (Understat if enough rows ➜ else fallback ➜ else baseline)
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # --- Generate predictions & tips ---------------------------------------
+      # ── 6) Generate predictions
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -87,7 +112,7 @@ PY
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # --- PR & auto-merge ----------------------------------------------------
+      # ── 7) Open PR and auto-merge
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
@@ -99,8 +124,8 @@ PY
           merge: true
           merge-method: squash
 
-      # Optional: show file tree in logs
-      - name: Post Checkout
+      # ── 8) Debug listing (optional)
+      - name: Post job listing
         run: |
           echo "--- data dir ---"; ls -la data || true
           echo "--- reports dir ---"; ls -la reports || true
