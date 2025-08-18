@@ -1,4 +1,945 @@
 {
-  "generated_utc": "2025-08-16T23:43:42.627989+00:00",
-  "predictions": []
+  "generated_utc": "2025-08-18T22:31:17.720217+00:00",
+  "predictions": [
+    {
+      "match_id": "2025-08-22T19:00:00Z_Wes-Che",
+      "home": "West Ham United FC",
+      "away": "Chelsea FC",
+      "kickoff_utc": "2025-08-22T19:00:00Z",
+      "xg": {
+        "home": 0.95,
+        "away": 1.87
+      },
+      "probs": {
+        "home": 0.2545,
+        "draw": 0.2324,
+        "away": 0.5131
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.1885,
+          "draw": 0.223,
+          "away": 0.5885
+        },
+        "elo": {
+          "home": 0.3535,
+          "draw": 0.2464,
+          "away": 0.4
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 0,
+          "away_goals": 1,
+          "prob": 0.111
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1059
+        },
+        {
+          "home_goals": 0,
+          "away_goals": 2,
+          "prob": 0.1038
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-23T11:30:00Z_Man-Tot",
+      "home": "Manchester City FC",
+      "away": "Tottenham Hotspur FC",
+      "kickoff_utc": "2025-08-23T11:30:00Z",
+      "xg": {
+        "home": 2.38,
+        "away": 1.33
+      },
+      "probs": {
+        "home": 0.5962,
+        "draw": 0.2027,
+        "away": 0.2011
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.6085,
+          "draw": 0.1894,
+          "away": 0.2021
+        },
+        "elo": {
+          "home": 0.5778,
+          "draw": 0.2226,
+          "away": 0.1997
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0923
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.0775
+        },
+        {
+          "home_goals": 3,
+          "away_goals": 1,
+          "prob": 0.0733
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-23T14:00:00Z_AFC-Wol",
+      "home": "AFC Bournemouth",
+      "away": "Wolverhampton Wanderers FC",
+      "kickoff_utc": "2025-08-23T14:00:00Z",
+      "xg": {
+        "home": 2.11,
+        "away": 1.21
+      },
+      "probs": {
+        "home": 0.5439,
+        "draw": 0.2197,
+        "away": 0.2365
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.5796,
+          "draw": 0.2069,
+          "away": 0.2134
+        },
+        "elo": {
+          "home": 0.4902,
+          "draw": 0.2388,
+          "away": 0.271
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0973
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.0921
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 0,
+          "prob": 0.0802
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-23T14:00:00Z_Bre-Ast",
+      "home": "Brentford FC",
+      "away": "Aston Villa FC",
+      "kickoff_utc": "2025-08-23T14:00:00Z",
+      "xg": {
+        "home": 1.65,
+        "away": 1.56
+      },
+      "probs": {
+        "home": 0.4052,
+        "draw": 0.2385,
+        "away": 0.3563
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.401,
+          "draw": 0.2336,
+          "away": 0.3654
+        },
+        "elo": {
+          "home": 0.4114,
+          "draw": 0.246,
+          "away": 0.3426
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1038
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0855
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 2,
+          "prob": 0.0812
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-23T14:00:00Z_Bur-Sun",
+      "home": "Burnley FC",
+      "away": "Sunderland AFC",
+      "kickoff_utc": "2025-08-23T14:00:00Z",
+      "xg": {
+        "home": 1.57,
+        "away": 6.15
+      },
+      "probs": {
+        "home": 0.183,
+        "draw": 0.1202,
+        "away": 0.6969
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.0318,
+          "draw": 0.0362,
+          "away": 0.932
+        },
+        "elo": {
+          "home": 0.4098,
+          "draw": 0.2461,
+          "away": 0.3441
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 5,
+          "prob": 0.0511
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 4,
+          "prob": 0.0415
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 5,
+          "prob": 0.0401
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-23T16:30:00Z_Ars-Lee",
+      "home": "Arsenal FC",
+      "away": "Leeds United FC",
+      "kickoff_utc": "2025-08-23T16:30:00Z",
+      "xg": {
+        "home": 1.93,
+        "away": 0.87
+      },
+      "probs": {
+        "home": 0.5846,
+        "draw": 0.2221,
+        "away": 0.1933
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.621,
+          "draw": 0.2152,
+          "away": 0.1639
+        },
+        "elo": {
+          "home": 0.5302,
+          "draw": 0.2325,
+          "away": 0.2374
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.1174
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 0,
+          "prob": 0.113
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1023
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-24T13:00:00Z_Cry-Not",
+      "home": "Crystal Palace FC",
+      "away": "Nottingham Forest FC",
+      "kickoff_utc": "2025-08-24T13:00:00Z",
+      "xg": {
+        "home": 1.16,
+        "away": 1.4
+      },
+      "probs": {
+        "home": 0.3621,
+        "draw": 0.2563,
+        "away": 0.3816
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3108,
+          "draw": 0.2643,
+          "away": 0.4249
+        },
+        "elo": {
+          "home": 0.439,
+          "draw": 0.2443,
+          "away": 0.3167
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1257
+        },
+        {
+          "home_goals": 0,
+          "away_goals": 1,
+          "prob": 0.1087
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.0899
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-24T13:00:00Z_Eve-Bri",
+      "home": "Everton FC",
+      "away": "Brighton & Hove Albion FC",
+      "kickoff_utc": "2025-08-24T13:00:00Z",
+      "xg": {
+        "home": 1.25,
+        "away": 1.36
+      },
+      "probs": {
+        "home": 0.3734,
+        "draw": 0.256,
+        "away": 0.3706
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3421,
+          "draw": 0.263,
+          "away": 0.3949
+        },
+        "elo": {
+          "home": 0.4204,
+          "draw": 0.2456,
+          "away": 0.3341
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1251
+        },
+        {
+          "home_goals": 0,
+          "away_goals": 1,
+          "prob": 0.1003
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.092
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-24T15:30:00Z_Ful-Man",
+      "home": "Fulham FC",
+      "away": "Manchester United FC",
+      "kickoff_utc": "2025-08-24T15:30:00Z",
+      "xg": {
+        "home": 1.46,
+        "away": 1.09
+      },
+      "probs": {
+        "home": 0.4677,
+        "draw": 0.2528,
+        "away": 0.2795
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.4564,
+          "draw": 0.2616,
+          "away": 0.282
+        },
+        "elo": {
+          "home": 0.4846,
+          "draw": 0.2396,
+          "away": 0.2758
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1243
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.1143
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0907
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-25T19:00:00Z_New-Liv",
+      "home": "Newcastle United FC",
+      "away": "Liverpool FC",
+      "kickoff_utc": "2025-08-25T19:00:00Z",
+      "xg": {
+        "home": 1.41,
+        "away": 1.9
+      },
+      "probs": {
+        "home": 0.3282,
+        "draw": 0.2324,
+        "away": 0.4394
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.2862,
+          "draw": 0.2229,
+          "away": 0.4909
+        },
+        "elo": {
+          "home": 0.3913,
+          "draw": 0.2466,
+          "away": 0.362
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.0978
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 2,
+          "prob": 0.0929
+        },
+        {
+          "home_goals": 0,
+          "away_goals": 1,
+          "prob": 0.0693
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-29T19:00:00Z_Ast-Cry",
+      "home": "Aston Villa FC",
+      "away": "Crystal Palace FC",
+      "kickoff_utc": "2025-08-29T19:00:00Z",
+      "xg": {
+        "home": 1.43,
+        "away": 1.17
+      },
+      "probs": {
+        "home": 0.4383,
+        "draw": 0.2542,
+        "away": 0.3075
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.4294,
+          "draw": 0.2616,
+          "away": 0.3091
+        },
+        "elo": {
+          "home": 0.4517,
+          "draw": 0.2432,
+          "away": 0.3051
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1244
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.1064
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0887
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-30T11:30:00Z_Che-Ful",
+      "home": "Chelsea FC",
+      "away": "Fulham FC",
+      "kickoff_utc": "2025-08-30T11:30:00Z",
+      "xg": {
+        "home": 1.7,
+        "away": 1.06
+      },
+      "probs": {
+        "home": 0.5126,
+        "draw": 0.2394,
+        "away": 0.248
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.5221,
+          "draw": 0.2405,
+          "away": 0.2374
+        },
+        "elo": {
+          "home": 0.4983,
+          "draw": 0.2377,
+          "away": 0.2641
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1142
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.1074
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0969
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-30T14:00:00Z_Sun-Bre",
+      "home": "Sunderland AFC",
+      "away": "Brentford FC",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
+      "xg": {
+        "home": 3.39,
+        "away": 1.72
+      },
+      "probs": {
+        "home": 0.5954,
+        "draw": 0.1823,
+        "away": 0.2223
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.6946,
+          "draw": 0.1414,
+          "away": 0.164
+        },
+        "elo": {
+          "home": 0.4465,
+          "draw": 0.2437,
+          "away": 0.3098
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 3,
+          "away_goals": 1,
+          "prob": 0.0675
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0598
+        },
+        {
+          "home_goals": 3,
+          "away_goals": 2,
+          "prob": 0.058
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-30T14:00:00Z_Man-Bur",
+      "home": "Manchester United FC",
+      "away": "Burnley FC",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
+      "xg": {
+        "home": 2.48,
+        "away": 1.41
+      },
+      "probs": {
+        "home": 0.5304,
+        "draw": 0.2092,
+        "away": 0.2604
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.6092,
+          "draw": 0.1847,
+          "away": 0.2061
+        },
+        "elo": {
+          "home": 0.4123,
+          "draw": 0.246,
+          "away": 0.3417
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0886
+        },
+        {
+          "home_goals": 3,
+          "away_goals": 1,
+          "prob": 0.0733
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.0714
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-30T14:00:00Z_Tot-AFC",
+      "home": "Tottenham Hotspur FC",
+      "away": "AFC Bournemouth",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
+      "xg": {
+        "home": 1.62,
+        "away": 1.75
+      },
+      "probs": {
+        "home": 0.3729,
+        "draw": 0.2349,
+        "away": 0.3922
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3578,
+          "draw": 0.2271,
+          "away": 0.4151
+        },
+        "elo": {
+          "home": 0.3956,
+          "draw": 0.2466,
+          "away": 0.3579
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.0975
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 2,
+          "prob": 0.0855
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0788
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-30T14:00:00Z_Wol-Eve",
+      "home": "Wolverhampton Wanderers FC",
+      "away": "Everton FC",
+      "kickoff_utc": "2025-08-30T14:00:00Z",
+      "xg": {
+        "home": 1.18,
+        "away": 1.41
+      },
+      "probs": {
+        "home": 0.3432,
+        "draw": 0.256,
+        "away": 0.4008
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3131,
+          "draw": 0.2622,
+          "away": 0.4247
+        },
+        "elo": {
+          "home": 0.3885,
+          "draw": 0.2467,
+          "away": 0.3649
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1247
+        },
+        {
+          "home_goals": 0,
+          "away_goals": 1,
+          "prob": 0.1061
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.0882
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-30T16:30:00Z_Lee-New",
+      "home": "Leeds United FC",
+      "away": "Newcastle United FC",
+      "kickoff_utc": "2025-08-30T16:30:00Z",
+      "xg": {
+        "home": 1.29,
+        "away": 1.74
+      },
+      "probs": {
+        "home": 0.3296,
+        "draw": 0.2395,
+        "away": 0.4309
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.2848,
+          "draw": 0.2348,
+          "away": 0.4804
+        },
+        "elo": {
+          "home": 0.3969,
+          "draw": 0.2465,
+          "away": 0.3566
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1082
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 2,
+          "prob": 0.0943
+        },
+        {
+          "home_goals": 0,
+          "away_goals": 1,
+          "prob": 0.0837
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-31T13:00:00Z_Bri-Man",
+      "home": "Brighton & Hove Albion FC",
+      "away": "Manchester City FC",
+      "kickoff_utc": "2025-08-31T13:00:00Z",
+      "xg": {
+        "home": 1.42,
+        "away": 2.05
+      },
+      "probs": {
+        "home": 0.312,
+        "draw": 0.2267,
+        "away": 0.4612
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.2659,
+          "draw": 0.2133,
+          "away": 0.5208
+        },
+        "elo": {
+          "home": 0.3812,
+          "draw": 0.2468,
+          "away": 0.372
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 2,
+          "prob": 0.0928
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.0906
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 2,
+          "prob": 0.066
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-31T13:00:00Z_Not-Wes",
+      "home": "Nottingham Forest FC",
+      "away": "West Ham United FC",
+      "kickoff_utc": "2025-08-31T13:00:00Z",
+      "xg": {
+        "home": 1.91,
+        "away": 0.97
+      },
+      "probs": {
+        "home": 0.5641,
+        "draw": 0.2253,
+        "away": 0.2106
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.5935,
+          "draw": 0.2193,
+          "away": 0.1872
+        },
+        "elo": {
+          "home": 0.52,
+          "draw": 0.2343,
+          "away": 0.2458
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.1069
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.1039
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 0,
+          "prob": 0.1022
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    },
+    {
+      "match_id": "2025-08-31T15:30:00Z_Liv-Ars",
+      "home": "Liverpool FC",
+      "away": "Arsenal FC",
+      "kickoff_utc": "2025-08-31T15:30:00Z",
+      "xg": {
+        "home": 1.48,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.4221,
+        "draw": 0.2478,
+        "away": 0.3301
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.4023,
+          "draw": 0.2508,
+          "away": 0.3469
+        },
+        "elo": {
+          "home": 0.4518,
+          "draw": 0.2432,
+          "away": 0.305
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.118
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.0872
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.0871
+        }
+      ],
+      "notes": {
+        "blend_elo": 0.4
+      }
+    }
+  ]
 }

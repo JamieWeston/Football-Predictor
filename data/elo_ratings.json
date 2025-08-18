@@ -1,0 +1,97 @@
+{
+  "init": 1500.0,
+  "scale": 400.0,
+  "k_base": 20.0,
+  "home_adv_points": 60.0,
+  "draw_nu": 0.6552901023890785,
+  "teams": {
+    "Manchester United FC": {
+      "elo": 1455.626908523055,
+      "games": 39
+    },
+    "Fulham FC": {
+      "elo": 1493.5366928761623,
+      "games": 39
+    },
+    "Ipswich Town FC": {
+      "elo": 1392.2597275360756,
+      "games": 38
+    },
+    "Liverpool FC": {
+      "elo": 1587.893007793711,
+      "games": 39
+    },
+    "Arsenal FC": {
+      "elo": 1579.6028061835977,
+      "games": 39
+    },
+    "Wolverhampton Wanderers FC": {
+      "elo": 1463.0702885765795,
+      "games": 39
+    },
+    "Everton FC": {
+      "elo": 1512.181654098775,
+      "games": 38
+    },
+    "Brighton & Hove Albion FC": {
+      "elo": 1532.2743026223004,
+      "games": 39
+    },
+    "Newcastle United FC": {
+      "elo": 1541.4110882305433,
+      "games": 39
+    },
+    "Southampton FC": {
+      "elo": 1370.886019870333,
+      "games": 38
+    },
+    "Nottingham Forest FC": {
+      "elo": 1532.5369465399629,
+      "games": 39
+    },
+    "AFC Bournemouth": {
+      "elo": 1506.032049696542,
+      "games": 39
+    },
+    "West Ham United FC": {
+      "elo": 1462.365633186042,
+      "games": 39
+    },
+    "Aston Villa FC": {
+      "elo": 1537.452492532887,
+      "games": 39
+    },
+    "Brentford FC": {
+      "elo": 1509.2195738724927,
+      "games": 39
+    },
+    "Crystal Palace FC": {
+      "elo": 1529.2779751259304,
+      "games": 39
+    },
+    "Chelsea FC": {
+      "elo": 1543.8403169873097,
+      "games": 39
+    },
+    "Manchester City FC": {
+      "elo": 1588.0019276350984,
+      "games": 39
+    },
+    "Leicester City FC": {
+      "elo": 1403.3864139839804,
+      "games": 38
+    },
+    "Tottenham Hotspur FC": {
+      "elo": 1463.4198784034807,
+      "games": 39
+    },
+    "Sunderland AFC": {
+      "elo": 1512.694672310861,
+      "games": 1
+    },
+    "Burnley FC": {
+      "elo": 1483.0296234142804,
+      "games": 1
+    }
+  }
+}
