@@ -1,4 +1,4 @@
-# Auto PR Predictions — No Backend
+# Auto PR Predictions
 
 This repo updates two files and opens a Pull Request automatically:
 - `data/predictions.json` – model probabilities per match
