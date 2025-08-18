@@ -35,18 +35,22 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # >>> THIS IS THE STEP YOU ASKED FOR (fetch at least two seasons) <<<
+      # ====== FETCH UNDERSTAT xG (lower-case league, multi-season) ======
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_SEASONS: "2023,2024,2025"   # ensure 2+ seasons so we have >500 rows
+          US_LEAGUE: "epl"              # <-- must be lower-case for understat
+          US_SEASONS: "2023,2024,2025"  # fetch multiple seasons to ensure >500 rows
+          US_SLEEP_MS: "300"
         run: python -m scripts.fetch_understat_xg
 
+      # ====== BUILD STRENGTHS FROM UNDERSTAT ROWS ======
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
+      # ====== PREDICTIONS & TIPS ======
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -56,22 +60,25 @@ jobs:
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
+      # Clean noisy Python caches from the PR
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
+      # ====== CREATE & AUTO-MERGE PR ======
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
           branch: "auto/update-${{ github.run_id }}"
           title: "Predictions & tips update – ${{ github.workflow }} #${{ github.run_id }}"
           body-path: "reports/PR_BODY.md"
-          commit-message: "chore: update strengths, predictions and tips"
+          commit-message: "chore: update Understat strengths and predictions"
           delete-branch: true
           merge: true
           merge-method: squash
 
+      # (optional) quick directory listing for debugging
       - name: Post Checkout
         run: |
           echo "--- data dir ---"
