@@ -38,7 +38,7 @@ jobs:
       - name: Install Playwright (Chromium)
         run: python -m playwright install --with-deps chromium
 
-      # -------- Understat (robust, best-effort) --------
+      # ---------- Understat (robust, best-effort) ----------
       - name: Fetch Understat xG (rendered browser, retries)
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -46,23 +46,20 @@ jobs:
           US_SEASONS: "2023,2024,2025"
         run: python -m scripts.fetch_understat_xg
 
+      # Keep this as a non-fatal check — implemented as a one-liner to avoid here-doc issues
       - name: Sanity check Understat CSV (non-fatal)
         shell: bash
         run: |
-          python - <<'PY'
-import os, pandas as pd
-p = "data/understat_matches.csv"
-if not os.path.exists(p):
-    print("[sanity] understat file missing -> fallback will be used if needed")
+          python -c "import os, pandas as pd; p='data/understat_matches.csv'; 
+if not os.path.exists(p): print('[sanity] understat file missing -> fallback may be used');
 else:
-    try:
-        df = pd.read_csv(p)
-        print(f"[sanity] understat rows={len(df)}")
-    except Exception as e:
-        print(f"[sanity] could not read understat csv: {e} -> fallback if needed")
-PY
+  import sys
+  try:
+    df=pd.read_csv(p); print(f'[sanity] understat rows={len(df)}')
+  except Exception as e:
+    print(f'[sanity] could not read understat csv: {e}')"
 
-      # -------- Football-Data fallback (always safe) --------
+      # ---------- Football-Data fallback (always safe) ----------
       - name: Fetch football-data results (fallback)
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -70,13 +67,13 @@ PY
           FD_SEASONS: "2023,2024,2025"
         run: python -m scripts.fetch_fd_results
 
-      # -------- Build strengths (xG preferred, goals fallback) --------
+      # ---------- Build strengths (xG preferred, goals fallback) ----------
       - name: Compute team strengths
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python -m scripts.compute_team_strengths
 
-      # -------- Generate predictions (your existing generator) --------
+      # ---------- Generate predictions (your existing generator) ----------
       - name: Generate predictions & tips
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -86,13 +83,13 @@ PY
           PYTHONUNBUFFERED: "1"
         run: python -u -m scripts.generate
 
-      # -------- Keep the repo clean --------
+      # ---------- Keep repo clean ----------
       - name: Untrack Python caches before PR
         run: |
           git rm -r --cached -f --ignore-unmatch **/__pycache__ || true
           git rm -r --cached -f --ignore-unmatch **/*.pyc **/*.pyo || true
 
-      # -------- Create & auto-merge PR --------
+      # ---------- Create & auto-merge PR ----------
       - name: Create Pull Request (auto-merge)
         uses: peter-evans/create-pull-request@v6
         with:
@@ -104,7 +101,6 @@ PY
           merge: true
           merge-method: squash
 
-      # Optional: list dirs in logs
       - name: Post Checkout
         run: |
           echo "--- data dir ---";    ls -la data || true
