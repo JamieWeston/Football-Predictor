@@ -1,0 +1,8 @@
+name: Run predictor (manual)
+
+on:
+  workflow_dispatch: {}   # This guarantees a visible Run button
+
+jobs:
+  run-main:
+    uses: ./.github/workflows/predict.yml
