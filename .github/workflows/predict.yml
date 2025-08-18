@@ -35,14 +35,29 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # ====== FETCH UNDERSTAT xG (lower-case league, multi-season) ======
+      # ====== FETCH UNDERSTAT xG (lower-case env, multi-season) ======
       - name: Fetch Understat xG
         env:
           PYTHONPATH: ${{ github.workspace }}
-          US_LEAGUE: "epl"              # <-- must be lower-case for understat
-          US_SEASONS: "2023,2024,2025"  # fetch multiple seasons to ensure >500 rows
+          US_LEAGUE: "epl"              # lower-case is fine; script upper-cases for URL
+          US_SEASONS: "2023,2024,2025"  # multiple seasons -> plenty of rows
           US_SLEEP_MS: "300"
         run: python -m scripts.fetch_understat_xg
+
+      # Quick sanity output so you can verify row counts in logs
+      - name: Sanity check Understat CSV
+        run: |
+          python - <<'PY'
+          import os, pandas as pd
+          p = "data/understat_matches.csv"
+          if not os.path.exists(p):
+              raise SystemExit("CSV missing: " + p)
+          df = pd.read_csv(p)
+          seas = sorted({int(s) for s in df['season'].dropna().unique().tolist()})
+          print(f"[sanity] understat csv rows={len(df)} seasons={seas[:8]}")
+          if len(df) <= 500:
+              print("[sanity] WARN: rows <= 500; strengths may skip. Consider adding seasons.")
+          PY
 
       # ====== BUILD STRENGTHS FROM UNDERSTAT ROWS ======
       - name: Compute team strengths
