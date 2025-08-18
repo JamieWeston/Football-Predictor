@@ -7,12 +7,12 @@ scipy==1.13.1
 requests==2.32.3
 aiohttp==3.9.5
 
-# --- Understat API wrapper (PyPI version that works on Python 3.11)
-understat==0.1.12
+# --- Understat from GitHub (works with Python 3.11 runners)
+git+https://github.com/amosbastian/understat.git@master
 
 # --- Time handling (used by pandas)
 python-dateutil==2.9.0.post0
 pytz==2024.1
 
-# --- Utilities (optional but handy for progress bars)
+# --- Utilities
 tqdm==4.66.4
