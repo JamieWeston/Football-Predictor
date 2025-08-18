@@ -3,16 +3,11 @@ numpy==1.26.4
 pandas==2.2.2
 scipy==1.13.1
 
-# --- HTTP clients
+# --- HTTP + HTML parsing
 requests==2.32.3
-aiohttp==3.9.5
-
-# --- Understat from GitHub (works with Python 3.11 runners)
-git+https://github.com/amosbastian/understat.git@master
+beautifulsoup4==4.12.3
+tqdm==4.66.4
 
 # --- Time handling (used by pandas)
 python-dateutil==2.9.0.post0
 pytz==2024.1
-
-# --- Utilities
-tqdm==4.66.4
