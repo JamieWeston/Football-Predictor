@@ -1,78 +1,158 @@
 # scripts/generate.py
-import os, json
-from datetime import datetime, timezone
+import json
+import math
+import os
+from datetime import datetime, timedelta, timezone
 
-from scripts.model import PoissonDC
-from scripts.sources import load_fixtures, load_team_strengths
-from scripts.team_names import norm
+import numpy as np
+import pandas as pd
+import requests
+from dateutil.parser import isoparse
 
-OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
-REP_DIR = os.path.join(os.path.dirname(__file__), "..", "reports")
+from scripts.team_names import canonical
+from scripts.model import poisson_grid, dixon_coles_adjust, markets_from_grid
 
-def most_likely_1x2(probs):
-    items = [("Home", probs["home"]), ("Draw", probs["draw"]), ("Away", probs["away"])]
-    items.sort(key=lambda x: x[1], reverse=True)
-    return items[0]
+PRED_JSON = "data/predictions.json"
+TIPS_JSON = "data/tips.json"
+STRENGTHS_JSON = "data/team_strengths.json"
+
+COMP = "PL"  # Football-Data competition code
+MAX_DAYS = int(os.getenv("FD_WINDOW_DAYS", "14"))
+FD_STATUSES = os.getenv("FD_STATUSES", "SCHEDULED,TIMED").split(",")
+TOKEN = os.environ["FOOTBALL_DATA_TOKEN"]
+HEADERS = {"X-Auth-Token": TOKEN, "User-Agent": "pl-predictor/1.0"}
+
+def _fd_url(date_from, date_to, statuses):
+    base = f"https://api.football-data.org/v4/competitions/{COMP}/matches"
+    return f"{base}?dateFrom={date_from}&dateTo={date_to}&status={','.join(statuses)}"
+
+def load_fixtures():
+    start = datetime.now(timezone.utc).date()
+    end = start + timedelta(days=MAX_DAYS)
+    url = _fd_url(start.isoformat(), end.isoformat(), FD_STATUSES)
+    r = requests.get(url, headers=HEADERS, timeout=30)
+    r.raise_for_status()
+    m = r.json().get("matches", [])
+    rows = []
+    for x in m:
+        rows.append({
+            "fd_id": str(x["id"]),
+            "utcDate": x["utcDate"],
+            "status": x["status"],
+            "home": x["homeTeam"]["name"],
+            "away": x["awayTeam"]["name"],
+        })
+    df = pd.DataFrame(rows)
+    # ensure order by kickoff
+    if not df.empty:
+        df["kickoff_utc"] = pd.to_datetime(df["utcDate"], utc=True)
+        df = df.sort_values("kickoff_utc")
+    return df
+
+def load_strengths():
+    if not os.path.exists(STRENGTHS_JSON):
+        raise SystemExit(f"[generate] missing {STRENGTHS_JSON}. Run compute_team_strengths first.")
+    with open(STRENGTHS_JSON, "r", encoding="utf-8") as f:
+        s = json.load(f)
+    return s
+
+def rates_for_match(strengths, h_name, a_name):
+    h = canonical(h_name)
+    a = canonical(a_name)
+    tmap = strengths["teams"]
+
+    if h not in tmap or a not in tmap:
+        # fallback: try exact without canonical
+        if h_name in tmap and a_name in tmap:
+            h = h_name; a = a_name
+        else:
+            raise KeyError(f"unmapped team(s): '{h_name}' or '{a_name}'")
+
+    alpha = strengths["alpha"]
+    HA = strengths["home_adv"]
+    atk_h = tmap[h]["atk"]
+    def_h = tmap[h]["def"]
+    atk_a = tmap[a]["atk"]
+    def_a = tmap[a]["def"]
+
+    lam = math.exp(alpha + HA + atk_h - def_a)
+    mu  = math.exp(alpha +      0 + atk_a - def_h)
+    return lam, mu
 
 def main():
-    os.makedirs(OUT_DIR, exist_ok=True); os.makedirs(REP_DIR, exist_ok=True)
+    os.makedirs("data", exist_ok=True)
 
     fixtures = load_fixtures()
-    strengths = load_team_strengths()
-    model = PoissonDC()
+    if fixtures is None or fixtures.empty:
+        # Smoke test: write empty but clear reason
+        out = {"generated_utc": datetime.now(timezone.utc).isoformat(), "predictions": []}
+        with open(PRED_JSON, "w", encoding="utf-8") as f:
+            json.dump(out, f, ensure_ascii=False, indent=2)
+        print("[generate] no fixtures returned from Football-Data in the requested window.")
+        return
 
-    predictions, tips = [], []
+    strengths = load_strengths()
 
-    for fx in fixtures:
-        h, a = fx["home"], fx["away"]
-        hn, an = norm(h), norm(a)
+    preds = []
+    tips = []
 
-        sh = strengths.get(hn, {"attack": 0.0, "defence": 0.0, "home_adv": 0.20})
-        sa = strengths.get(an, {"attack": 0.0, "defence": 0.0, "home_adv": 0.20})
+    for _, r in fixtures.iterrows():
+        try:
+            lam, mu = rates_for_match(strengths, r["home"], r["away"])
+        except KeyError as e:
+            print(f"[warn] {e}; skipping")
+            continue
 
-        lam, mu = model.rates_from_features(
-            atk_h=sh["attack"], def_h=sh["defence"], ha_h=sh["home_adv"],
-            atk_a=sa["attack"], def_a=sa["defence"]
-        )
-        M = model.build_grid(lam, mu)
+        if lam + mu < 0.35:
+            print(f"[warn] suspiciously small rates for {r['home']} vs {r['away']}: lam={lam:.2f}, mu={mu:.2f}")
 
-        pH, pD, pA = model.probs_from_grid(M)
-        btts_y, btts_n, over25, under25 = model.btts_over_under_from_grid(M)
-        ex_h, ex_a = model.expected_goals_from_grid(M)
-        top_scores = model.top_scorelines(M, k=3)
+        G = poisson_grid(lam, mu)
+        G = dixon_coles_adjust(G, lam, mu, rho=-0.13)
+        mkts = markets_from_grid(G)
 
-        pred = {
-            "match_id": fx["match_id"], "fd_id": fx.get("fd_id", ""),
-            "home": h, "away": a, "kickoff_utc": fx["kickoff_utc"],
-            "probs": {"home": round(pH,4), "draw": round(pD,4), "away": round(pA,4)},
-            "btts": {"yes": round(btts_y,4), "no": round(btts_n,4)},
-            "totals_2_5": {"over": round(over25,4), "under": round(under25,4)},
-            "xg": {"home": round(lam,2), "away": round(mu,2)},   # model rates as pre-match xG
-            "scorelines_top": [{"home_goals": s["home_goals"], "away_goals": s["away_goals"], "prob": round(s["prob"],4)} for s in top_scores],
-            "model_version": "poisson_dc_xg_v2"
-        }
-        predictions.append(pred)
-
-        pick, p_pick = most_likely_1x2(pred["probs"])
-        tips.append({
-            "match_id": fx["match_id"], "home": h, "away": a,
-            "tip": {"market": "1X2", "selection": pick},
-            "model_prob": round(p_pick,4),
-            "alternatives": []
+        preds.append({
+            "match_id": f"{r['kickoff_utc'].strftime('%Y-%m-%d_%H%M')}_{canonical(r['home'])[:3].upper()}-{canonical(r['away'])[:3].upper()}",
+            "fd_id": r["fd_id"],
+            "home": r["home"],
+            "away": r["away"],
+            "kickoff_utc": r["kickoff_utc"].isoformat(),
+            "probs": mkts["probs"],
+            "btts": mkts["btts"],
+            "totals_2_5": mkts["totals_2_5"],
+            "xg": {"home": round(lam, 2), "away": round(mu, 2)},
+            "scorelines_top": mkts["scorelines_top"],
+            "model_version": "bivar_dc_v2",
         })
 
-    ts = datetime.now(timezone.utc).isoformat()
-    with open(os.path.join(OUT_DIR, "predictions.json"), "w", encoding="utf-8") as f:
-        json.dump({"generated_utc": ts, "predictions": predictions}, f, indent=2)
-    with open(os.path.join(OUT_DIR, "tips.json"), "w", encoding="utf-8") as f:
-        json.dump({"generated_utc": ts, "rules": {"tip_policy":"1X2_max"}, "tips": tips}, f, indent=2)
+        # simple tip: choose highest 1X2; show alts BTTS/OU if >55%
+        side = max(mkts["probs"], key=mkts["probs"].get)
+        p = mkts["probs"][side]
+        alts = []
+        if mkts["btts"]["yes"] >= 0.55: alts.append({"market": "BTTS Yes", "prob": mkts["btts"]["yes"]})
+        if mkts["btts"]["no"] >= 0.55:  alts.append({"market": "BTTS No", "prob": mkts["btts"]["no"]})
+        if mkts["totals_2_5"]["over"] >= 0.55:  alts.append({"market": "O2.5 Over", "prob": mkts["totals_2_5"]["over"]})
+        if mkts["totals_2_5"]["under"] >= 0.55: alts.append({"market": "U2.5 Under", "prob": mkts["totals_2_5"]["under"]})
 
-    with open(os.path.join(REP_DIR, "PR_BODY.md"), "w", encoding="utf-8") as f:
-        f.write("# Predictions update\n\n")
-        f.write(f"Generated: {ts}\n\n")
-        f.write("## Picks\n")
-        for t in tips:
-            f.write(f"- **{t['home']} vs {t['away']}** — 1X2 / {t['tip']['selection']} (model {t['model_prob']:.0%})\n")
+        tips.append({
+            "match_id": preds[-1]["match_id"],
+            "fd_id": r["fd_id"],
+            "home": r["home"],
+            "away": r["away"],
+            "kickoff_utc": r["kickoff_utc"].isoformat(),
+            "pick": {"market": "1X2", "selection": side, "prob": p},
+            "alts": [{"market": a["market"], "prob": a["prob"]} for a in alts[:3]],
+        })
+
+    pred_out = {"generated_utc": datetime.now(timezone.utc).isoformat(), "predictions": preds}
+    with open(PRED_JSON, "w", encoding="utf-8") as f:
+        json.dump(pred_out, f, ensure_ascii=False, indent=2)
+
+    tips_out = {"generated_utc": datetime.now(timezone.utc).isoformat(), "tips": tips}
+    with open(TIPS_JSON, "w", encoding="utf-8") as f:
+        json.dump(tips_out, f, ensure_ascii=False, indent=2)
+
+    print(f"[generate] wrote {len(preds)} predictions -> {PRED_JSON}")
+    print(f"[generate] wrote {len(tips)} tips -> {TIPS_JSON}")
 
 if __name__ == "__main__":
     main()
