@@ -1,92 +1,174 @@
 # scripts/generate.py
 from __future__ import annotations
 
-import json
 import os
+import json
+import datetime as _dt
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, Any, List
+from collections import Counter
 
 import pandas as pd
 
-from plpred.fd_client import fetch_fixtures, fetch_results
-from plpred.ratings import build_ratings
-from plpred.predict import outcome_probs, top_scorelines
+from plpred.fd_client import fetch_fixtures  # your existing client
+from plpred.predict import (
+    expected_goals_for_pair,
+    outcome_probs,
+    top_scorelines,
+)
 
 
 DATA_DIR = Path("data")
+REPORTS_DIR = Path("reports")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def _load_results_for_ratings() -> pd.DataFrame:
+def _read_json(p: Path) -> Any:
+    if p.exists():
+        return json.loads(p.read_text(encoding="utf-8"))
+    return None
+
+
+def load_ratings() -> Dict[str, Any]:
     """
-    Try to load 1–2 recent seasons to build ratings.
-    If nothing is available (or token missing), return empty DF → ratings fallback.
+    Try to load team ratings with strengths.
+    Expected shape:
+    {
+      "base_home_xg": 1.45,
+      "base_away_xg": 1.35,
+      "draw_scale": 1.0,
+      "teams": {
+        "Arsenal": {"att":..., "def":..., "att_h":..., "def_h":..., "att_a":..., "def_a":...},
+        ...
+      }
+    }
     """
-    league = os.getenv("FD_LEAGUE", "PL")
-    seasons_env = os.getenv("FD_SEASONS", "")  # e.g. "2024,2025"
-    seasons: List[int] = []
-    for s in (x.strip() for x in seasons_env.split(",") if x.strip()):
-        try:
-            seasons.append(int(s))
-        except ValueError:
-            pass
+    # most recent/complete file first
+    for candidate in [
+        DATA_DIR / "team_ratings.json",
+        DATA_DIR / "team_strengths.json",   # older naming
+    ]:
+        obj = _read_json(candidate)
+        if obj:
+            print(f"[gen] loaded ratings from {candidate}")
+            return obj
 
-    frames: List[pd.DataFrame] = []
-    for s in seasons:
-        try:
-            df = fetch_results(league, s)
-            if not df.empty:
-                frames.append(df[["utc_date", "home", "away", "home_goals", "away_goals"]])
-        except Exception:
-            # Log to console, continue quietly
-            print(f"[ratings] WARN could not fetch results for {league} {s}", flush=True)
-
-    return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(
-        columns=["utc_date", "home", "away", "home_goals", "away_goals"]
-    )
+    # Very minimal fallback if nothing exists
+    print("[gen] WARNING: no ratings file found; using neutral strengths.")
+    return {
+        "base_home_xg": 1.45,
+        "base_away_xg": 1.35,
+        "draw_scale": 1.0,
+        "teams": {}
+    }
 
 
-def main() -> None:
+def fetch_fixtures_defensive(days: int = 14) -> pd.DataFrame:
+    """
+    Call your fd_client in a way that supports both the modern kwargs
+    and the older positional signature used in some earlier versions.
+    """
     token = os.getenv("FOOTBALL_DATA_TOKEN")
-    window_days = int(os.getenv("FD_WINDOW_DAYS", "14"))
+    try:
+        # Preferred: rolling window
+        fx = fetch_fixtures(days=days, token=token)
+    except TypeError:
+        # Fallback: legacy signature (session, league, date_from, date_to)
+        today = _dt.date.today()
+        date_from = today.isoformat()
+        date_to = (today + _dt.timedelta(days=days)).isoformat()
+        fx = fetch_fixtures(None, "PL", date_from, date_to)
 
-    # 1) Results → ratings (robust to empty)
-    results_df = _load_results_for_ratings()
-    ratings: Dict = build_ratings(results_df)
+    # Normalise to DataFrame
+    if isinstance(fx, list):
+        df = pd.DataFrame(fx)
+    elif isinstance(fx, pd.DataFrame):
+        df = fx.copy()
+    else:
+        raise RuntimeError("fetch_fixtures returned an unexpected type")
 
-    # 2) Fixtures window
-    fx = fetch_fixtures(days=window_days, token=token)
-    if fx.empty:
-        print("[generate] No fixtures fetched – nothing to do.")
-        return
+    # Required columns
+    need = ["utc_date", "home", "away"]
+    missing = [c for c in need if c not in df.columns]
+    if missing:
+        raise RuntimeError(f"fixtures missing columns: {missing}")
 
-    # 3) Predict each
-    preds = []
-    for _, r in fx.iterrows():
-        home, away = str(r["home"]), str(r["away"])
-        probs = outcome_probs(home, away, ratings)
+    # Fill match_id if not set
+    if "match_id" not in df.columns or df["match_id"].isna().all():
+        df["match_id"] = [
+            f"{r['utc_date']}_{(r['home'] or '')[:3]}-{(r['away'] or '')[:3]}"
+            for r in df.to_dict("records")
+        ]
+
+    return df
+
+
+def build_predictions(fixtures_df: pd.DataFrame, ratings: Dict[str, Any]) -> Dict[str, Any]:
+    preds: List[Dict[str, Any]] = []
+    resolve_counts = Counter()
+    debug_rows = []
+
+    draw_scale = float(ratings.get("draw_scale", 1.0))
+
+    for row in fixtures_df.to_dict("records"):
+        home = row["home"]
+        away = row["away"]
+        kickoff = row["utc_date"]
+        mid = row.get("match_id") or f"{kickoff}_{home[:3]}-{away[:3]}"
+
+        lam_h, lam_a, dbg = expected_goals_for_pair(home, away, ratings)
+        ph, pd, pa = outcome_probs(lam_h, lam_a, draw_scale=draw_scale)
+
         preds.append({
-            "match_id": str(r.get("match_id")),
+            "match_id": mid,
             "home": home,
             "away": away,
-            "kickoff_utc": str(r.get("utc_date")),
-            "xg": {"home": round(probs["mu_h"], 2), "away": round(probs["mu_a"], 2)},
-            "probs": {k: round(v, 4) for k, v in probs.items() if k in ("home", "draw", "away")},
-            "scorelines_top": top_scorelines(probs["mu_h"], probs["mu_a"], n=3),
-            "notes": {"ratings_empty": len(ratings.get("teams", {})) == 0},
+            "kickoff_utc": kickoff,
+            "xg": {"home": round(lam_h, 2), "away": round(lam_a, 2)},
+            "probs": {"home": round(ph, 4), "draw": round(pd, 4), "away": round(pa, 4)},
+            "probs_components": {
+                "poisson": {"home": round(ph, 4), "draw": round(pd, 4), "away": round(pa, 4)}
+            },
+            "scorelines_top": top_scorelines(lam_h, lam_a, k=3, cap=8),
+            "notes": {"resolve": {"home": dbg["resolve_home"], "away": dbg["resolve_away"]}},
         })
 
-    out_json = {
-        "generated_utc": pd.Timestamp.utcnow().isoformat(),
+        resolve_counts[(dbg["resolve_home"], dbg["resolve_away"])] += 1
+        debug_rows.append(dbg)
+
+    out = {
+        "generated_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(),
         "predictions": preds,
     }
 
-    # 4) Write outputs
-    DATA_DIR.mkdir(exist_ok=True, parents=True)
-    (DATA_DIR / "predictions.json").write_text(json.dumps(out_json, indent=2))
-    pd.DataFrame(preds).to_csv(DATA_DIR / "predictions.csv", index=False)
+    # Extra debug report to help spot unmatched names quickly
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    (REPORTS_DIR / "name_resolution.json").write_text(json.dumps({
+        "counts": {f"{k[0]}|{k[1]}": v for k, v in resolve_counts.items()},
+        "examples": debug_rows[:50],
+    }, indent=2))
 
-    print(f"[generate] wrote {len(preds)} predictions")
+    return out
+
+
+def write_outputs(predictions_obj: Dict[str, Any]) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    (DATA_DIR / "predictions.json").write_text(json.dumps(predictions_obj, indent=2))
+    print("[gen] wrote data/predictions.json")
+    print("[gen] wrote reports/name_resolution.json")
+
+
+def main() -> None:
+    ratings = load_ratings()
+    fixtures_df = fetch_fixtures_defensive(days=int(os.getenv("FD_WINDOW_DAYS", "14")))
+    if fixtures_df.empty:
+        print("[gen] WARNING: fixtures are empty; writing empty predictions.")
+        write_outputs({"generated_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(), "predictions": []})
+        return
+
+    preds = build_predictions(fixtures_df, ratings)
+    write_outputs(preds)
 
 
 if __name__ == "__main__":
