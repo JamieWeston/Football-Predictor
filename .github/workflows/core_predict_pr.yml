@@ -1,0 +1,114 @@
+name: Core Predict (PR mode, safe)
+
+on:
+  workflow_dispatch:
+  # Uncomment after you verify the first manual run:
+  # schedule:
+  #   - cron: "30 6 * * *"   # 06:30 UTC daily
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip tooling
+        run: python -m pip install --upgrade pip wheel setuptools
+
+      - name: Install deps
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Generate predictions & tips
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          PYTHONUNBUFFERED: "1"
+        run: python -u -m scripts.generate
+
+      - name: Verify outputs exist
+        run: |
+          echo "=== data dir ==="; ls -la data || true
+          for f in data/predictions.json data/fixtures.json data/tips.json; do
+            if [ -f "$f" ]; then
+              echo "---- head of $f ----"
+              head -n 40 "$f"
+            fi
+          done
+          echo "=== reports dir ==="; ls -la reports || true
+          if [ -f reports/PR_BODY.md ]; then
+            echo "---- head of reports/PR_BODY.md ----"
+            head -n 40 reports/PR_BODY.md
+          fi
+
+      - name: Show git diff (what changed?)
+        run: |
+          git status --porcelain || true
+          echo "---- unstaged diff ----"
+          git diff || true
+
+      # Stage ONLY the files we expect this job to own
+      - name: Stage changes
+        run: |
+          git add data/**/*.json data/**/*.csv reports/** 2>/dev/null || true
+          git add data/*.json data/*.csv 2>/dev/null || true
+          CHANGED=$(git diff --cached --name-only | wc -l)
+          echo "CHANGED_COUNT=$CHANGED" >> $GITHUB_ENV
+          echo "---- staged files ----"
+          git diff --cached --name-only || true
+
+      - name: No changes
+        if: env.CHANGED_COUNT == '0'
+        run: echo "No changes to commit this run."
+
+      - name: Create Pull Request
+        if: env.CHANGED_COUNT != '0'
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "auto/predict-${{ github.run_id }}"
+          delete-branch: true
+          title: "chore(core): update predictions and data (${{ github.run_id }})"
+          commit-message: "chore(core): update predictions and data"
+          body: |
+            Automated update from Core Predict (PR mode).
+            Run ID: ${{ github.run_id }}
+            Actor: ${{ github.actor }}
+            Files staged:
+            ```
+            ${{ steps.cpr.outputs.pull-request-operation }}
+            ```
+          add-paths: |
+            data/**
+            reports/**
+            *.json
+            *.csv
+
+      # Optional: if your repo settings allow auto-merge for bot PRs
+      - name: Enable PR auto-merge (squash)
+        if: steps.cpr.outputs.pull-request-number != ''
+        continue-on-error: true
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash
+
+      - name: PR URL (if any)
+        if: steps.cpr.outputs.pull-request-url != ''
+        run: echo "PR opened: ${{ steps.cpr.outputs.pull-request-url }}"
