@@ -2,18 +2,27 @@ name: Core Predict (PR mode, safe)
 
 on:
   workflow_dispatch:
-  # Uncomment after you verify the first manual run:
+  # Uncomment when you're happy with autoruns:
   # schedule:
-  #   - cron: "30 6 * * *"   # 06:30 UTC daily
+  #   - cron: "30 06 * * *"   # daily 06:30 UTC
 
+# Prevent overlapping runs of this workflow
+concurrency:
+  group: core-predict-pr
+  cancel-in-progress: true
+
+# Minimum permissions needed for PRs
 permissions:
   contents: write
   pull-requests: write
 
+env:
+  PYTHONUNBUFFERED: "1"
+
 jobs:
   predict:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout (full history)
@@ -22,48 +31,116 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       - name: Upgrade pip tooling
-        run: python -m pip install --upgrade pip wheel setuptools
+        run: python -m pip install --upgrade pip setuptools wheel
 
-      - name: Install deps
+      - name: Install dependencies (if requirements.txt exists)
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-      - name: Generate predictions & tips
-        env:
-          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
-          PYTHONUNBUFFERED: "1"
-        run: python -u -m scripts.generate
-
-      - name: Verify outputs exist
-        run: |
-          echo "=== data dir ==="; ls -la data || true
-          for f in data/predictions.json data/fixtures.json data/tips.json; do
-            if [ -f "$f" ]; then
-              echo "---- head of $f ----"
-              head -n 40 "$f"
-            fi
-          done
-          echo "=== reports dir ==="; ls -la reports || true
-          if [ -f reports/PR_BODY.md ]; then
-            echo "---- head of reports/PR_BODY.md ----"
-            head -n 40 reports/PR_BODY.md
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "No requirements.txt present; continuing."
           fi
 
-      - name: Show git diff (what changed?)
+      - name: Sanity import
+        run: |
+          python - <<'PY'
+          import importlib
+          # Soft import checks – do not fail the run here to avoid brittle CI
+          for m in ("scripts.generate", "plpred.predict"):
+              try:
+                  importlib.import_module(m)
+                  print(f"[ok] import {m}")
+              except Exception as e:
+                  print(f"[warn] import {m} failed: {e}")
+          PY
+
+      - name: Generate predictions (with retries)
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+        run: |
+          set -e
+          tries=0
+          until [ $tries -ge 3 ]
+          do
+            echo "Run generate (attempt $((tries+1)) of 3)..."
+            if python -u -m scripts.generate; then
+              echo "GEN_OK=true" >> $GITHUB_ENV
+              break
+            fi
+            tries=$((tries+1))
+            echo "Generate failed; sleeping 10s and retrying..."
+            sleep 10
+          done
+          if [ "${GEN_OK:-}" != "true" ]; then
+            echo "::warning::Generation failed after retries; will not commit."
+            echo "SAFE_TO_COMMIT=false" >> $GITHUB_ENV
+          else
+            echo "SAFE_TO_COMMIT=true" >> $GITHUB_ENV
+          fi
+
+      - name: Verify outputs (JSON existence & validity)
+        if: ${{ env.SAFE_TO_COMMIT == 'true' }}
+        run: |
+          echo "== data dir =="
+          ls -la data || true
+          python - <<'PY'
+          import json, os, sys, glob
+          ok = True
+
+          def check_json(p):
+              try:
+                  with open(p, "r", encoding="utf-8") as f:
+                      data = json.load(f)
+                  print(f"[ok] JSON parse: {p}")
+                  return data
+              except Exception as e:
+                  print(f"[warn] JSON parse failed: {p}: {e}")
+                  return None
+
+          preds_path = "data/predictions.json"
+          preds = None
+          if os.path.exists(preds_path):
+              preds = check_json(preds_path)
+              # If it has the expected shape, enforce non-empty predictions.
+              if isinstance(preds, dict) and "predictions" in preds:
+                  if not preds["predictions"]:
+                      print("[warn] predictions.json has zero predictions; skip commit.")
+                      ok = False
+              else:
+                  print("[warn] predictions.json does not have expected structure; skip commit.")
+                  ok = False
+          else:
+              print("[warn] predictions.json missing; skip commit.")
+              ok = False
+
+          # Optional: sanity check fixtures/tips if they exist
+          for optional in ("data/fixtures.json", "data/tips.json"):
+              if os.path.exists(optional):
+                  check_json(optional)
+
+          if not ok:
+              # Mark safe gate false but don't fail the workflow.
+              with open(os.environ["GITHUB_ENV"], "a") as env:
+                  env.write("SAFE_TO_COMMIT=false\n")
+          PY
+
+      - name: Show git diff (pre-stage)
         run: |
           git status --porcelain || true
           echo "---- unstaged diff ----"
           git diff || true
 
-      # Stage ONLY the files we expect this job to own
-      - name: Stage changes
+      - name: Stage changed data/reports
+        if: ${{ env.SAFE_TO_COMMIT == 'true' }}
         run: |
+          # Stage common outputs; ignore if not present
           git add data/**/*.json data/**/*.csv reports/** 2>/dev/null || true
           git add data/*.json data/*.csv 2>/dev/null || true
           CHANGED=$(git diff --cached --name-only | wc -l)
@@ -72,11 +149,16 @@ jobs:
           git diff --cached --name-only || true
 
       - name: No changes
-        if: env.CHANGED_COUNT == '0'
-        run: echo "No changes to commit this run."
+        if: ${{ env.SAFE_TO_COMMIT != 'true' || env.CHANGED_COUNT == '0' }}
+        run: |
+          if [ "${SAFE_TO_COMMIT}" != "true" ]; then
+            echo "Skipping commit/PR because SAFE_TO_COMMIT=${SAFE_TO_COMMIT}."
+          else
+            echo "No changes to commit."
+          fi
 
       - name: Create Pull Request
-        if: env.CHANGED_COUNT != '0'
+        if: ${{ env.SAFE_TO_COMMIT == 'true' && env.CHANGED_COUNT != '0' }}
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
@@ -86,22 +168,20 @@ jobs:
           title: "chore(core): update predictions and data (${{ github.run_id }})"
           commit-message: "chore(core): update predictions and data"
           body: |
-            Automated update from Core Predict (PR mode).
-            Run ID: ${{ github.run_id }}
-            Actor: ${{ github.actor }}
-            Files staged:
-            ```
-            ${{ steps.cpr.outputs.pull-request-operation }}
-            ```
+            Automated update from **Core Predict (PR mode)**.
+            * Run ID: ${{ github.run_id }}
+            * Actor: ${{ github.actor }}
+            * Workflow: ${{ github.workflow }}
+
+            Staged files are limited to `data/**`, `reports/**`, `*.json`, `*.csv`.
           add-paths: |
             data/**
             reports/**
             *.json
             *.csv
 
-      # Optional: if your repo settings allow auto-merge for bot PRs
       - name: Enable PR auto-merge (squash)
-        if: steps.cpr.outputs.pull-request-number != ''
+        if: ${{ steps.cpr.outputs.pull-request-number != '' }}
         continue-on-error: true
         uses: peter-evans/enable-pull-request-automerge@v3
         with:
@@ -110,5 +190,16 @@ jobs:
           merge-method: squash
 
       - name: PR URL (if any)
-        if: steps.cpr.outputs.pull-request-url != ''
+        if: ${{ steps.cpr.outputs.pull-request-url != '' }}
         run: echo "PR opened: ${{ steps.cpr.outputs.pull-request-url }}"
+
+      - name: Upload data/reports as artifact (always)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-predict-outputs-${{ github.run_id }}
+          path: |
+            data/**/*.json
+            data/**/*.csv
+            reports/**
+          if-no-files-found: ignore
