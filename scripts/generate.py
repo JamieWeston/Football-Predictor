@@ -5,23 +5,24 @@ import os
 import json
 import datetime as _dt
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from collections import Counter
 
 import pandas as pd
 
-from plpred.fd_client import fetch_fixtures  # your existing client
+from plpred.fd_client import fetch_fixtures  # your client
 from plpred.predict import (
     expected_goals_for_pair,
     outcome_probs,
     top_scorelines,
 )
 
-
 DATA_DIR = Path("data")
 REPORTS_DIR = Path("reports")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+DEBUG_PATH = REPORTS_DIR / "fixtures_fetch_debug.json"
 
 
 def _read_json(p: Path) -> Any:
@@ -30,32 +31,21 @@ def _read_json(p: Path) -> Any:
     return None
 
 
+def _write_json(p: Path, obj: Any) -> None:
+    p.write_text(json.dumps(obj, indent=2), encoding="utf-8")
+
+
 def load_ratings() -> Dict[str, Any]:
-    """
-    Try to load team ratings with strengths.
-    Expected shape:
-    {
-      "base_home_xg": 1.45,
-      "base_away_xg": 1.35,
-      "draw_scale": 1.0,
-      "teams": {
-        "Arsenal": {"att":..., "def":..., "att_h":..., "def_h":..., "att_a":..., "def_a":...},
-        ...
-      }
-    }
-    """
-    # most recent/complete file first
+    # try preferred first
     for candidate in [
         DATA_DIR / "team_ratings.json",
-        DATA_DIR / "team_strengths.json",   # older naming
+        DATA_DIR / "team_strengths.json",
     ]:
         obj = _read_json(candidate)
         if obj:
             print(f"[gen] loaded ratings from {candidate}")
             return obj
-
-    # Very minimal fallback if nothing exists
-    print("[gen] WARNING: no ratings file found; using neutral strengths.")
+    print("[gen] WARNING: no ratings found; using neutral baselines.")
     return {
         "base_home_xg": 1.45,
         "base_away_xg": 1.35,
@@ -64,45 +54,139 @@ def load_ratings() -> Dict[str, Any]:
     }
 
 
-def fetch_fixtures_defensive(days: int = 14) -> pd.DataFrame:
-    """
-    Call your fd_client in a way that supports both the modern kwargs
-    and the older positional signature used in some earlier versions.
-    """
-    token = os.getenv("FOOTBALL_DATA_TOKEN")
-    try:
-        # Preferred: rolling window
-        fx = fetch_fixtures(days=days, token=token)
-    except TypeError:
-        # Fallback: legacy signature (session, league, date_from, date_to)
-        today = _dt.date.today()
-        date_from = today.isoformat()
-        date_to = (today + _dt.timedelta(days=days)).isoformat()
-        fx = fetch_fixtures(None, "PL", date_from, date_to)
+# ---------------------------
+# Fixture fetching (robust)
+# ---------------------------
 
-    # Normalise to DataFrame
-    if isinstance(fx, list):
-        df = pd.DataFrame(fx)
-    elif isinstance(fx, pd.DataFrame):
-        df = fx.copy()
-    else:
-        raise RuntimeError("fetch_fixtures returned an unexpected type")
+def _is_fd_matches_payload(x: Any) -> bool:
+    """Return True if `x` looks like the raw FD payload: {'matches': [...] }."""
+    return isinstance(x, dict) and "matches" in x and isinstance(x["matches"], list)
 
-    # Required columns
+
+def _normalise_fd_matches_payload(x: Dict[str, Any]) -> pd.DataFrame:
+    """Convert raw FD 'matches' payload to our columns."""
+    rows = []
+    for m in x.get("matches", []):
+        rows.append({
+            "match_id": m.get("id") or None,
+            "utc_date": m.get("utcDate"),
+            "home": (m.get("homeTeam") or {}).get("name"),
+            "away": (m.get("awayTeam") or {}).get("name"),
+            "competition": (m.get("competition") or {}).get("code") or (m.get("competition") or {}).get("name"),
+            "status": m.get("status"),
+        })
+    df = pd.DataFrame(rows)
+    return df
+
+
+def _ensure_df(obj: Any) -> pd.DataFrame:
+    """Accept list/df/raw-FD and produce a DF with our required columns if possible."""
+    if isinstance(obj, pd.DataFrame):
+        return obj.copy()
+
+    if isinstance(obj, list):
+        return pd.DataFrame(obj)
+
+    if _is_fd_matches_payload(obj):
+        return _normalise_fd_matches_payload(obj)
+
+    # object with 'matches' nested under another key (rare)
+    if isinstance(obj, dict):
+        for v in obj.values():
+            if _is_fd_matches_payload(v):
+                return _normalise_fd_matches_payload(v)
+
+    # Nothing usable
+    return pd.DataFrame()
+
+
+def _finalise_fixtures_df(df: pd.DataFrame, label: str) -> pd.DataFrame:
+    # Rename common alt names -> canonical
+    rename_map = {
+        "utcDate": "utc_date",
+        "homeTeam": "home",
+        "awayTeam": "away",
+    }
+    df = df.rename(columns=rename_map)
+
     need = ["utc_date", "home", "away"]
+    # If home/away columns are objects with {'name': ..}, pull name
+    for col in ["home", "away"]:
+        if col in df.columns and df[col].apply(lambda x: isinstance(x, dict) and "name" in x).any():
+            df[col] = df[col].apply(lambda x: x.get("name") if isinstance(x, dict) else x)
+
+    # ensure required columns
     missing = [c for c in need if c not in df.columns]
     if missing:
-        raise RuntimeError(f"fixtures missing columns: {missing}")
+        print(f"[gen] [{label}] fixtures missing columns {missing} -> discarding")
+        return pd.DataFrame(columns=["match_id", "utc_date", "home", "away"])
 
-    # Fill match_id if not set
+    # Create match_id if not present
     if "match_id" not in df.columns or df["match_id"].isna().all():
         df["match_id"] = [
             f"{r['utc_date']}_{(r['home'] or '')[:3]}-{(r['away'] or '')[:3]}"
             for r in df.to_dict("records")
         ]
 
-    return df
+    # Ensure utc_date strings
+    df["utc_date"] = df["utc_date"].astype(str)
+    df["home"] = df["home"].astype(str)
+    df["away"] = df["away"].astype(str)
 
+    # Keep only future fixtures or today onwards
+    today = _dt.datetime.now(_dt.timezone.utc).date().isoformat()
+    df = df[df["utc_date"] >= today].reset_index(drop=True)
+    return df[["match_id", "utc_date", "home", "away"]]
+
+
+def fetch_fixtures_robust(days: int = 21) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+    """
+    Try several strategies, then fall back to local data/fixtures.json.
+    Returns (df, debug_dict)
+    """
+    dbg = {"attempts": []}
+    token = os.getenv("FOOTBALL_DATA_TOKEN")
+
+    # A) modern rolling window
+    try:
+        obj = fetch_fixtures(days=days, token=token)
+        df = _finalise_fixtures_df(_ensure_df(obj), "modern")
+        dbg["attempts"].append({"strategy": "modern", "rows": len(df)})
+        if not df.empty:
+            return df, dbg
+    except Exception as e:
+        dbg["attempts"].append({"strategy": "modern", "error": repr(e)})
+
+    # B) legacy (league window)
+    try:
+        today = _dt.date.today()
+        date_from = today.isoformat()
+        date_to = (today + _dt.timedelta(days=days)).isoformat()
+        obj = fetch_fixtures(None, "PL", date_from, date_to)  # legacy signature
+        df = _finalise_fixtures_df(_ensure_df(obj), "legacy-league")
+        dbg["attempts"].append({"strategy": "legacy-league", "rows": len(df)})
+        if not df.empty:
+            return df, dbg
+    except Exception as e:
+        dbg["attempts"].append({"strategy": "legacy-league", "error": repr(e)})
+
+    # C) fallback to local data/fixtures.json (if present)
+    try:
+        local = _read_json(DATA_DIR / "fixtures.json") or []
+        df = _finalise_fixtures_df(_ensure_df(local), "local-file")
+        dbg["attempts"].append({"strategy": "local-file", "rows": len(df)})
+        if not df.empty:
+            return df, dbg
+    except Exception as e:
+        dbg["attempts"].append({"strategy": "local-file", "error": repr(e)})
+
+    # give up (empty)
+    return pd.DataFrame(columns=["match_id", "utc_date", "home", "away"]), dbg
+
+
+# ---------------------------
+# Predictions
+# ---------------------------
 
 def build_predictions(fixtures_df: pd.DataFrame, ratings: Dict[str, Any]) -> Dict[str, Any]:
     preds: List[Dict[str, Any]] = []
@@ -142,33 +226,42 @@ def build_predictions(fixtures_df: pd.DataFrame, ratings: Dict[str, Any]) -> Dic
         "predictions": preds,
     }
 
-    # Extra debug report to help spot unmatched names quickly
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    (REPORTS_DIR / "name_resolution.json").write_text(json.dumps({
+    # quick diagnostics for mapping quality
+    _write_json(REPORTS_DIR / "name_resolution.json", {
         "counts": {f"{k[0]}|{k[1]}": v for k, v in resolve_counts.items()},
-        "examples": debug_rows[:50],
-    }, indent=2))
+        "examples": debug_rows[:100],
+    })
 
     return out
 
 
-def write_outputs(predictions_obj: Dict[str, Any]) -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    (DATA_DIR / "predictions.json").write_text(json.dumps(predictions_obj, indent=2))
-    print("[gen] wrote data/predictions.json")
-    print("[gen] wrote reports/name_resolution.json")
-
-
 def main() -> None:
     ratings = load_ratings()
-    fixtures_df = fetch_fixtures_defensive(days=int(os.getenv("FD_WINDOW_DAYS", "14")))
+
+    # window (default 21) can be overridden from workflow env
+    window_days = int(os.getenv("FD_WINDOW_DAYS", "21"))
+    fixtures_df, dbg = fetch_fixtures_robust(days=window_days)
+
+    # persist diagnostics
+    _write_json(DEBUG_PATH, dbg)
+
     if fixtures_df.empty:
-        print("[gen] WARNING: fixtures are empty; writing empty predictions.")
-        write_outputs({"generated_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(), "predictions": []})
+        print("[gen] No fixtures found after all strategies. Writing empty predictions.json")
+        _write_json(DATA_DIR / "predictions.json", {
+            "generated_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            "predictions": []
+        })
         return
 
-    preds = build_predictions(fixtures_df, ratings)
-    write_outputs(preds)
+    # Always save what we used (helps debugging + offers future local fallback)
+    _write_json(DATA_DIR / "fixtures.json", fixtures_df.to_dict("records"))
+
+    preds_obj = build_predictions(fixtures_df, ratings)
+    _write_json(DATA_DIR / "predictions.json", preds_obj)
+
+    print(f"[gen] Fixtures used: {len(fixtures_df)}")
+    print(f"[gen] Wrote: data/predictions.json, data/fixtures.json, "
+          f"reports/name_resolution.json, {DEBUG_PATH}")
 
 
 if __name__ == "__main__":
