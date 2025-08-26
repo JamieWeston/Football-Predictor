@@ -1,51 +1,6 @@
 {
-  "generated_utc": "2025-08-25T18:36:56.348824+00:00",
+  "generated_utc": "2025-08-26T06:37:49.243546+00:00",
   "predictions": [
-    {
-      "match_id": 537803,
-      "home": "Newcastle United FC",
-      "away": "Liverpool FC",
-      "kickoff_utc": "2025-08-25T19:00:00Z",
-      "xg": {
-        "home": 1.45,
-        "away": 1.35
-      },
-      "probs": {
-        "home": 0.3964,
-        "draw": 0.2524,
-        "away": 0.3511
-      },
-      "probs_components": {
-        "poisson": {
-          "home": 0.3964,
-          "draw": 0.2524,
-          "away": 0.3511
-        }
-      },
-      "scorelines_top": [
-        {
-          "home_goals": 1,
-          "away_goals": 1,
-          "prob": 0.11903569758886418
-        },
-        {
-          "home_goals": 1,
-          "away_goals": 0,
-          "prob": 0.08817459080656603
-        },
-        {
-          "home_goals": 2,
-          "away_goals": 1,
-          "prob": 0.08630088075192653
-        }
-      ],
-      "notes": {
-        "resolve": {
-          "home": "no-teams-in-ratings",
-          "away": "no-teams-in-ratings"
-        }
-      }
-    },
     {
       "match_id": 537808,
       "home": "Chelsea FC",
