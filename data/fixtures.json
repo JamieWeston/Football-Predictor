@@ -1,35 +1,140 @@
-{
-  "generated_utc": "2025-08-15T22:46:47.860292Z",
-  "fixtures": [
-    {
-      "match_id": "2025-08-16_1230_AV-NEW",
-      "kickoff_utc": "2025-08-16T11:30:00Z",
-      "home": "Aston Villa",
-      "away": "Newcastle United"
-    },
-    {
-      "match_id": "2025-08-16_1500_BHA-FUL",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Brighton",
-      "away": "Fulham"
-    },
-    {
-      "match_id": "2025-08-16_1500_SUN-WHU",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Sunderland",
-      "away": "West Ham United"
-    },
-    {
-      "match_id": "2025-08-16_1500_TOT-BUR",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Tottenham Hotspur",
-      "away": "Burnley"
-    },
-    {
-      "match_id": "2025-08-16_1730_WOL-MCI",
-      "kickoff_utc": "2025-08-16T16:30:00Z",
-      "home": "Wolves",
-      "away": "Manchester City"
-    }
-  ]
-}
+[
+  {
+    "match_id": 537825,
+    "utc_date": "2025-09-21T13:00:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Newcastle United FC"
+  },
+  {
+    "match_id": 537826,
+    "utc_date": "2025-09-21T13:00:00Z",
+    "home": "Sunderland AFC",
+    "away": "Aston Villa FC"
+  },
+  {
+    "match_id": 537828,
+    "utc_date": "2025-09-21T15:30:00Z",
+    "home": "Arsenal FC",
+    "away": "Manchester City FC"
+  },
+  {
+    "match_id": 537837,
+    "utc_date": "2025-09-27T11:30:00Z",
+    "home": "Brentford FC",
+    "away": "Manchester United FC"
+  },
+  {
+    "match_id": 537836,
+    "utc_date": "2025-09-27T14:00:00Z",
+    "home": "Crystal Palace FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 537838,
+    "utc_date": "2025-09-27T14:00:00Z",
+    "home": "Chelsea FC",
+    "away": "Brighton & Hove Albion FC"
+  },
+  {
+    "match_id": 537840,
+    "utc_date": "2025-09-27T14:00:00Z",
+    "home": "Leeds United FC",
+    "away": "AFC Bournemouth"
+  },
+  {
+    "match_id": 537841,
+    "utc_date": "2025-09-27T14:00:00Z",
+    "home": "Manchester City FC",
+    "away": "Burnley FC"
+  },
+  {
+    "match_id": 537843,
+    "utc_date": "2025-09-27T16:30:00Z",
+    "home": "Nottingham Forest FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 537844,
+    "utc_date": "2025-09-27T19:00:00Z",
+    "home": "Tottenham Hotspur FC",
+    "away": "Wolverhampton Wanderers FC"
+  },
+  {
+    "match_id": 537835,
+    "utc_date": "2025-09-28T13:00:00Z",
+    "home": "Aston Villa FC",
+    "away": "Fulham FC"
+  },
+  {
+    "match_id": 537842,
+    "utc_date": "2025-09-28T15:30:00Z",
+    "home": "Newcastle United FC",
+    "away": "Arsenal FC"
+  },
+  {
+    "match_id": 537839,
+    "utc_date": "2025-09-29T19:00:00Z",
+    "home": "Everton FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 537845,
+    "utc_date": "2025-10-03T19:00:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Fulham FC"
+  },
+  {
+    "match_id": 537851,
+    "utc_date": "2025-10-04T11:30:00Z",
+    "home": "Leeds United FC",
+    "away": "Tottenham Hotspur FC"
+  },
+  {
+    "match_id": 537847,
+    "utc_date": "2025-10-04T14:00:00Z",
+    "home": "Arsenal FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 537852,
+    "utc_date": "2025-10-04T14:00:00Z",
+    "home": "Manchester United FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 537849,
+    "utc_date": "2025-10-04T16:30:00Z",
+    "home": "Chelsea FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 537846,
+    "utc_date": "2025-10-05T13:00:00Z",
+    "home": "Aston Villa FC",
+    "away": "Burnley FC"
+  },
+  {
+    "match_id": 537850,
+    "utc_date": "2025-10-05T13:00:00Z",
+    "home": "Everton FC",
+    "away": "Crystal Palace FC"
+  },
+  {
+    "match_id": 537853,
+    "utc_date": "2025-10-05T13:00:00Z",
+    "home": "Newcastle United FC",
+    "away": "Nottingham Forest FC"
+  },
+  {
+    "match_id": 537854,
+    "utc_date": "2025-10-05T13:00:00Z",
+    "home": "Wolverhampton Wanderers FC",
+    "away": "Brighton & Hove Albion FC"
+  },
+  {
+    "match_id": 537848,
+    "utc_date": "2025-10-05T15:30:00Z",
+    "home": "Brentford FC",
+    "away": "Manchester City FC"
+  }
+]
