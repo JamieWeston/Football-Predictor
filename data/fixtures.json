@@ -1,35 +1,266 @@
-{
-  "generated_utc": "2025-08-15T22:46:47.860292Z",
-  "fixtures": [
-    {
-      "match_id": "2025-08-16_1230_AV-NEW",
-      "kickoff_utc": "2025-08-16T11:30:00Z",
-      "home": "Aston Villa",
-      "away": "Newcastle United"
-    },
-    {
-      "match_id": "2025-08-16_1500_BHA-FUL",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Brighton",
-      "away": "Fulham"
-    },
-    {
-      "match_id": "2025-08-16_1500_SUN-WHU",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Sunderland",
-      "away": "West Ham United"
-    },
-    {
-      "match_id": "2025-08-16_1500_TOT-BUR",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Tottenham Hotspur",
-      "away": "Burnley"
-    },
-    {
-      "match_id": "2025-08-16_1730_WOL-MCI",
-      "kickoff_utc": "2025-08-16T16:30:00Z",
-      "home": "Wolves",
-      "away": "Manchester City"
-    }
-  ]
-}
+[
+  {
+    "match_id": 537907,
+    "utc_date": "2025-11-30T12:00:00Z",
+    "home": "Crystal Palace FC",
+    "away": "Manchester United FC"
+  },
+  {
+    "match_id": 537906,
+    "utc_date": "2025-11-30T14:05:00Z",
+    "home": "Aston Villa FC",
+    "away": "Wolverhampton Wanderers FC"
+  },
+  {
+    "match_id": 537912,
+    "utc_date": "2025-11-30T14:05:00Z",
+    "home": "Nottingham Forest FC",
+    "away": "Brighton & Hove Albion FC"
+  },
+  {
+    "match_id": 537914,
+    "utc_date": "2025-11-30T14:05:00Z",
+    "home": "West Ham United FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 537909,
+    "utc_date": "2025-11-30T16:30:00Z",
+    "home": "Chelsea FC",
+    "away": "Arsenal FC"
+  },
+  {
+    "match_id": 537915,
+    "utc_date": "2025-12-02T19:30:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Everton FC"
+  },
+  {
+    "match_id": 537919,
+    "utc_date": "2025-12-02T19:30:00Z",
+    "home": "Fulham FC",
+    "away": "Manchester City FC"
+  },
+  {
+    "match_id": 537923,
+    "utc_date": "2025-12-02T20:15:00Z",
+    "home": "Newcastle United FC",
+    "away": "Tottenham Hotspur FC"
+  },
+  {
+    "match_id": 537916,
+    "utc_date": "2025-12-03T19:30:00Z",
+    "home": "Brighton & Hove Albion FC",
+    "away": "Aston Villa FC"
+  },
+  {
+    "match_id": 537917,
+    "utc_date": "2025-12-03T19:30:00Z",
+    "home": "Arsenal FC",
+    "away": "Brentford FC"
+  },
+  {
+    "match_id": 537918,
+    "utc_date": "2025-12-03T19:30:00Z",
+    "home": "Burnley FC",
+    "away": "Crystal Palace FC"
+  },
+  {
+    "match_id": 537924,
+    "utc_date": "2025-12-03T19:30:00Z",
+    "home": "Wolverhampton Wanderers FC",
+    "away": "Nottingham Forest FC"
+  },
+  {
+    "match_id": 537920,
+    "utc_date": "2025-12-03T20:15:00Z",
+    "home": "Liverpool FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 537921,
+    "utc_date": "2025-12-03T20:15:00Z",
+    "home": "Leeds United FC",
+    "away": "Chelsea FC"
+  },
+  {
+    "match_id": 537922,
+    "utc_date": "2025-12-04T20:00:00Z",
+    "home": "Manchester United FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 537926,
+    "utc_date": "2025-12-06T12:30:00Z",
+    "home": "Aston Villa FC",
+    "away": "Arsenal FC"
+  },
+  {
+    "match_id": 537925,
+    "utc_date": "2025-12-06T15:00:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Chelsea FC"
+  },
+  {
+    "match_id": 537928,
+    "utc_date": "2025-12-06T15:00:00Z",
+    "home": "Everton FC",
+    "away": "Nottingham Forest FC"
+  },
+  {
+    "match_id": 537931,
+    "utc_date": "2025-12-06T15:00:00Z",
+    "home": "Manchester City FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 537932,
+    "utc_date": "2025-12-06T15:00:00Z",
+    "home": "Newcastle United FC",
+    "away": "Burnley FC"
+  },
+  {
+    "match_id": 537933,
+    "utc_date": "2025-12-06T15:00:00Z",
+    "home": "Tottenham Hotspur FC",
+    "away": "Brentford FC"
+  },
+  {
+    "match_id": 537930,
+    "utc_date": "2025-12-06T17:30:00Z",
+    "home": "Leeds United FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 537927,
+    "utc_date": "2025-12-07T14:00:00Z",
+    "home": "Brighton & Hove Albion FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 537929,
+    "utc_date": "2025-12-07T16:30:00Z",
+    "home": "Fulham FC",
+    "away": "Crystal Palace FC"
+  },
+  {
+    "match_id": 537934,
+    "utc_date": "2025-12-08T20:00:00Z",
+    "home": "Wolverhampton Wanderers FC",
+    "away": "Manchester United FC"
+  },
+  {
+    "match_id": 537940,
+    "utc_date": "2025-12-13T15:00:00Z",
+    "home": "Chelsea FC",
+    "away": "Everton FC"
+  },
+  {
+    "match_id": 537941,
+    "utc_date": "2025-12-13T15:00:00Z",
+    "home": "Liverpool FC",
+    "away": "Brighton & Hove Albion FC"
+  },
+  {
+    "match_id": 537939,
+    "utc_date": "2025-12-13T17:30:00Z",
+    "home": "Burnley FC",
+    "away": "Fulham FC"
+  },
+  {
+    "match_id": 537937,
+    "utc_date": "2025-12-13T20:00:00Z",
+    "home": "Arsenal FC",
+    "away": "Wolverhampton Wanderers FC"
+  },
+  {
+    "match_id": 537935,
+    "utc_date": "2025-12-14T14:00:00Z",
+    "home": "Sunderland AFC",
+    "away": "Newcastle United FC"
+  },
+  {
+    "match_id": 537936,
+    "utc_date": "2025-12-14T14:00:00Z",
+    "home": "Crystal Palace FC",
+    "away": "Manchester City FC"
+  },
+  {
+    "match_id": 537943,
+    "utc_date": "2025-12-14T14:00:00Z",
+    "home": "Nottingham Forest FC",
+    "away": "Tottenham Hotspur FC"
+  },
+  {
+    "match_id": 537944,
+    "utc_date": "2025-12-14T14:00:00Z",
+    "home": "West Ham United FC",
+    "away": "Aston Villa FC"
+  },
+  {
+    "match_id": 537938,
+    "utc_date": "2025-12-14T16:30:00Z",
+    "home": "Brentford FC",
+    "away": "Leeds United FC"
+  },
+  {
+    "match_id": 537942,
+    "utc_date": "2025-12-15T20:00:00Z",
+    "home": "Manchester United FC",
+    "away": "AFC Bournemouth"
+  },
+  {
+    "match_id": 537952,
+    "utc_date": "2025-12-20T12:30:00Z",
+    "home": "Newcastle United FC",
+    "away": "Chelsea FC"
+  },
+  {
+    "match_id": 537945,
+    "utc_date": "2025-12-20T15:00:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Burnley FC"
+  },
+  {
+    "match_id": 537947,
+    "utc_date": "2025-12-20T15:00:00Z",
+    "home": "Brighton & Hove Albion FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 537951,
+    "utc_date": "2025-12-20T15:00:00Z",
+    "home": "Manchester City FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 537954,
+    "utc_date": "2025-12-20T15:00:00Z",
+    "home": "Wolverhampton Wanderers FC",
+    "away": "Brentford FC"
+  },
+  {
+    "match_id": 537953,
+    "utc_date": "2025-12-20T17:30:00Z",
+    "home": "Tottenham Hotspur FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 537948,
+    "utc_date": "2025-12-20T20:00:00Z",
+    "home": "Everton FC",
+    "away": "Arsenal FC"
+  },
+  {
+    "match_id": 537950,
+    "utc_date": "2025-12-20T20:00:00Z",
+    "home": "Leeds United FC",
+    "away": "Crystal Palace FC"
+  },
+  {
+    "match_id": 537946,
+    "utc_date": "2025-12-21T16:30:00Z",
+    "home": "Aston Villa FC",
+    "away": "Manchester United FC"
+  }
+]
