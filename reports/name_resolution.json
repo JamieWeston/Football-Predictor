@@ -1,0 +1,417 @@
+{
+  "counts": {
+    "no-teams-in-ratings|no-teams-in-ratings": 41
+  },
+  "examples": [
+    {
+      "home_name": "Manchester United FC",
+      "away_name": "AFC Bournemouth",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Newcastle United FC",
+      "away_name": "Chelsea FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "AFC Bournemouth",
+      "away_name": "Burnley FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Brighton & Hove Albion FC",
+      "away_name": "Sunderland AFC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Manchester City FC",
+      "away_name": "West Ham United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Wolverhampton Wanderers FC",
+      "away_name": "Brentford FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Tottenham Hotspur FC",
+      "away_name": "Liverpool FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Everton FC",
+      "away_name": "Arsenal FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Leeds United FC",
+      "away_name": "Crystal Palace FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Aston Villa FC",
+      "away_name": "Manchester United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Fulham FC",
+      "away_name": "Nottingham Forest FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Manchester United FC",
+      "away_name": "Newcastle United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Nottingham Forest FC",
+      "away_name": "Manchester City FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Arsenal FC",
+      "away_name": "Brighton & Hove Albion FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Brentford FC",
+      "away_name": "AFC Bournemouth",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Burnley FC",
+      "away_name": "Everton FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Liverpool FC",
+      "away_name": "Wolverhampton Wanderers FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "West Ham United FC",
+      "away_name": "Fulham FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Chelsea FC",
+      "away_name": "Aston Villa FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Sunderland AFC",
+      "away_name": "Leeds United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Crystal Palace FC",
+      "away_name": "Tottenham Hotspur FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Burnley FC",
+      "away_name": "Newcastle United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Chelsea FC",
+      "away_name": "AFC Bournemouth",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Nottingham Forest FC",
+      "away_name": "Everton FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "West Ham United FC",
+      "away_name": "Brighton & Hove Albion FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Arsenal FC",
+      "away_name": "Aston Villa FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Manchester United FC",
+      "away_name": "Wolverhampton Wanderers FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Crystal Palace FC",
+      "away_name": "Fulham FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Liverpool FC",
+      "away_name": "Leeds United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Sunderland AFC",
+      "away_name": "Manchester City FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Brentford FC",
+      "away_name": "Tottenham Hotspur FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Aston Villa FC",
+      "away_name": "Nottingham Forest FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Brighton & Hove Albion FC",
+      "away_name": "Burnley FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Wolverhampton Wanderers FC",
+      "away_name": "West Ham United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "AFC Bournemouth",
+      "away_name": "Arsenal FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Leeds United FC",
+      "away_name": "Manchester United FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Everton FC",
+      "away_name": "Brentford FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Fulham FC",
+      "away_name": "Liverpool FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Newcastle United FC",
+      "away_name": "Crystal Palace FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Tottenham Hotspur FC",
+      "away_name": "Sunderland AFC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    },
+    {
+      "home_name": "Manchester City FC",
+      "away_name": "Chelsea FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    }
+  ]
+}
