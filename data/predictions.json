@@ -1,55 +1,10 @@
 {
-  "generated_utc": "2026-02-11T07:12:12.437543+00:00",
+  "generated_utc": "2026-02-11T19:13:15.763860+00:00",
   "predictions": [
     {
       "match_id": 538036,
       "home": "Aston Villa FC",
       "away": "Brighton & Hove Albion FC",
-      "kickoff_utc": "2026-02-11T19:30:00Z",
-      "xg": {
-        "home": 1.45,
-        "away": 1.35
-      },
-      "probs": {
-        "home": 0.3964,
-        "draw": 0.2524,
-        "away": 0.3511
-      },
-      "probs_components": {
-        "poisson": {
-          "home": 0.3964,
-          "draw": 0.2524,
-          "away": 0.3511
-        }
-      },
-      "scorelines_top": [
-        {
-          "home_goals": 1,
-          "away_goals": 1,
-          "prob": 0.11903569758886418
-        },
-        {
-          "home_goals": 1,
-          "away_goals": 0,
-          "prob": 0.08817459080656603
-        },
-        {
-          "home_goals": 2,
-          "away_goals": 1,
-          "prob": 0.08630088075192653
-        }
-      ],
-      "notes": {
-        "resolve": {
-          "home": "no-teams-in-ratings",
-          "away": "no-teams-in-ratings"
-        }
-      }
-    },
-    {
-      "match_id": 538037,
-      "home": "Crystal Palace FC",
-      "away": "Burnley FC",
       "kickoff_utc": "2026-02-11T19:30:00Z",
       "xg": {
         "home": 1.45,
@@ -141,6 +96,51 @@
       "home": "Nottingham Forest FC",
       "away": "Wolverhampton Wanderers FC",
       "kickoff_utc": "2026-02-11T19:30:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 538037,
+      "home": "Crystal Palace FC",
+      "away": "Burnley FC",
+      "kickoff_utc": "2026-02-11T19:40:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
