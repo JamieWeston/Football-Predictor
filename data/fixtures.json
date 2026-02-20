@@ -1,35 +1,182 @@
-{
-  "generated_utc": "2025-08-15T22:46:47.860292Z",
-  "fixtures": [
-    {
-      "match_id": "2025-08-16_1230_AV-NEW",
-      "kickoff_utc": "2025-08-16T11:30:00Z",
-      "home": "Aston Villa",
-      "away": "Newcastle United"
-    },
-    {
-      "match_id": "2025-08-16_1500_BHA-FUL",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Brighton",
-      "away": "Fulham"
-    },
-    {
-      "match_id": "2025-08-16_1500_SUN-WHU",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Sunderland",
-      "away": "West Ham United"
-    },
-    {
-      "match_id": "2025-08-16_1500_TOT-BUR",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Tottenham Hotspur",
-      "away": "Burnley"
-    },
-    {
-      "match_id": "2025-08-16_1730_WOL-MCI",
-      "kickoff_utc": "2025-08-16T16:30:00Z",
-      "home": "Wolves",
-      "away": "Manchester City"
-    }
-  ]
-}
+[
+  {
+    "match_id": 538046,
+    "utc_date": "2026-02-21T15:00:00Z",
+    "home": "Aston Villa FC",
+    "away": "Leeds United FC"
+  },
+  {
+    "match_id": 538048,
+    "utc_date": "2026-02-21T15:00:00Z",
+    "home": "Brentford FC",
+    "away": "Brighton & Hove Albion FC"
+  },
+  {
+    "match_id": 538049,
+    "utc_date": "2026-02-21T15:00:00Z",
+    "home": "Chelsea FC",
+    "away": "Burnley FC"
+  },
+  {
+    "match_id": 538054,
+    "utc_date": "2026-02-21T17:30:00Z",
+    "home": "West Ham United FC",
+    "away": "AFC Bournemouth"
+  },
+  {
+    "match_id": 538051,
+    "utc_date": "2026-02-21T20:00:00Z",
+    "home": "Manchester City FC",
+    "away": "Newcastle United FC"
+  },
+  {
+    "match_id": 538045,
+    "utc_date": "2026-02-22T14:00:00Z",
+    "home": "Sunderland AFC",
+    "away": "Fulham FC"
+  },
+  {
+    "match_id": 538047,
+    "utc_date": "2026-02-22T14:00:00Z",
+    "home": "Crystal Palace FC",
+    "away": "Wolverhampton Wanderers FC"
+  },
+  {
+    "match_id": 538052,
+    "utc_date": "2026-02-22T14:00:00Z",
+    "home": "Nottingham Forest FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 538053,
+    "utc_date": "2026-02-22T16:30:00Z",
+    "home": "Tottenham Hotspur FC",
+    "away": "Arsenal FC"
+  },
+  {
+    "match_id": 538050,
+    "utc_date": "2026-02-23T20:00:00Z",
+    "home": "Everton FC",
+    "away": "Manchester United FC"
+  },
+  {
+    "match_id": 538064,
+    "utc_date": "2026-02-27T20:00:00Z",
+    "home": "Wolverhampton Wanderers FC",
+    "away": "Aston Villa FC"
+  },
+  {
+    "match_id": 538055,
+    "utc_date": "2026-02-28T12:30:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 538058,
+    "utc_date": "2026-02-28T15:00:00Z",
+    "home": "Burnley FC",
+    "away": "Brentford FC"
+  },
+  {
+    "match_id": 538060,
+    "utc_date": "2026-02-28T15:00:00Z",
+    "home": "Liverpool FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 538063,
+    "utc_date": "2026-02-28T15:00:00Z",
+    "home": "Newcastle United FC",
+    "away": "Everton FC"
+  },
+  {
+    "match_id": 538061,
+    "utc_date": "2026-02-28T17:30:00Z",
+    "home": "Leeds United FC",
+    "away": "Manchester City FC"
+  },
+  {
+    "match_id": 538056,
+    "utc_date": "2026-03-01T14:00:00Z",
+    "home": "Brighton & Hove Albion FC",
+    "away": "Nottingham Forest FC"
+  },
+  {
+    "match_id": 538059,
+    "utc_date": "2026-03-01T14:00:00Z",
+    "home": "Fulham FC",
+    "away": "Tottenham Hotspur FC"
+  },
+  {
+    "match_id": 538062,
+    "utc_date": "2026-03-01T14:00:00Z",
+    "home": "Manchester United FC",
+    "away": "Crystal Palace FC"
+  },
+  {
+    "match_id": 538057,
+    "utc_date": "2026-03-01T16:30:00Z",
+    "home": "Arsenal FC",
+    "away": "Chelsea FC"
+  },
+  {
+    "match_id": 538065,
+    "utc_date": "2026-03-03T19:30:00Z",
+    "home": "AFC Bournemouth",
+    "away": "Brentford FC"
+  },
+  {
+    "match_id": 538068,
+    "utc_date": "2026-03-03T19:30:00Z",
+    "home": "Everton FC",
+    "away": "Burnley FC"
+  },
+  {
+    "match_id": 538070,
+    "utc_date": "2026-03-03T19:30:00Z",
+    "home": "Leeds United FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 538074,
+    "utc_date": "2026-03-03T20:15:00Z",
+    "home": "Wolverhampton Wanderers FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 538066,
+    "utc_date": "2026-03-04T19:30:00Z",
+    "home": "Aston Villa FC",
+    "away": "Chelsea FC"
+  },
+  {
+    "match_id": 538067,
+    "utc_date": "2026-03-04T19:30:00Z",
+    "home": "Brighton & Hove Albion FC",
+    "away": "Arsenal FC"
+  },
+  {
+    "match_id": 538069,
+    "utc_date": "2026-03-04T19:30:00Z",
+    "home": "Fulham FC",
+    "away": "West Ham United FC"
+  },
+  {
+    "match_id": 538071,
+    "utc_date": "2026-03-04T19:30:00Z",
+    "home": "Manchester City FC",
+    "away": "Nottingham Forest FC"
+  },
+  {
+    "match_id": 538072,
+    "utc_date": "2026-03-04T20:15:00Z",
+    "home": "Newcastle United FC",
+    "away": "Manchester United FC"
+  },
+  {
+    "match_id": 538073,
+    "utc_date": "2026-03-05T20:00:00Z",
+    "home": "Tottenham Hotspur FC",
+    "away": "Crystal Palace FC"
+  }
+]
