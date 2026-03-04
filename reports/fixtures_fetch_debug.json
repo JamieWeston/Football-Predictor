@@ -1,0 +1,12 @@
+{
+  "attempts": [
+    {
+      "strategy": "modern",
+      "rows": 0
+    },
+    {
+      "strategy": "legacy-league",
+      "rows": 24
+    }
+  ]
+}
