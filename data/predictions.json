@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-03-28T18:53:24.575753+00:00",
+  "generated_utc": "2026-03-29T07:13:40.006685+00:00",
   "predictions": [
     {
       "match_id": 538104,
@@ -636,6 +636,186 @@
       "home": "Chelsea FC",
       "away": "Manchester United FC",
       "kickoff_utc": "2026-04-18T19:00:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 538113,
+      "home": "Nottingham Forest FC",
+      "away": "Burnley FC",
+      "kickoff_utc": "2026-04-19T13:00:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 538105,
+      "home": "Aston Villa FC",
+      "away": "Sunderland AFC",
+      "kickoff_utc": "2026-04-19T13:00:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 538109,
+      "home": "Everton FC",
+      "away": "Liverpool FC",
+      "kickoff_utc": "2026-04-19T13:00:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 538111,
+      "home": "Manchester City FC",
+      "away": "Arsenal FC",
+      "kickoff_utc": "2026-04-19T15:30:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
