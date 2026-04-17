@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-04-17T07:58:52.824203+00:00",
+  "generated_utc": "2026-04-17T19:11:52.771788+00:00",
   "predictions": [
     {
       "match_id": 538107,
@@ -947,51 +947,6 @@
       }
     },
     {
-      "match_id": 538126,
-      "home": "Aston Villa FC",
-      "away": "Tottenham Hotspur FC",
-      "kickoff_utc": "2026-05-02T11:30:00Z",
-      "xg": {
-        "home": 1.45,
-        "away": 1.35
-      },
-      "probs": {
-        "home": 0.3964,
-        "draw": 0.2524,
-        "away": 0.3511
-      },
-      "probs_components": {
-        "poisson": {
-          "home": 0.3964,
-          "draw": 0.2524,
-          "away": 0.3511
-        }
-      },
-      "scorelines_top": [
-        {
-          "home_goals": 1,
-          "away_goals": 1,
-          "prob": 0.11903569758886418
-        },
-        {
-          "home_goals": 1,
-          "away_goals": 0,
-          "prob": 0.08817459080656603
-        },
-        {
-          "home_goals": 2,
-          "away_goals": 1,
-          "prob": 0.08630088075192653
-        }
-      ],
-      "notes": {
-        "resolve": {
-          "home": "no-teams-in-ratings",
-          "away": "no-teams-in-ratings"
-        }
-      }
-    },
-    {
       "match_id": 538125,
       "home": "AFC Bournemouth",
       "away": "Crystal Palace FC",
@@ -1221,6 +1176,51 @@
       "home": "Manchester United FC",
       "away": "Liverpool FC",
       "kickoff_utc": "2026-05-03T14:30:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 538126,
+      "home": "Aston Villa FC",
+      "away": "Tottenham Hotspur FC",
+      "kickoff_utc": "2026-05-03T18:00:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
