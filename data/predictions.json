@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-04-29T08:27:54.445318+00:00",
+  "generated_utc": "2026-04-29T19:45:46.150913+00:00",
   "predictions": [
     {
       "match_id": 538131,
@@ -950,7 +950,7 @@
       "match_id": 538146,
       "home": "Aston Villa FC",
       "away": "Liverpool FC",
-      "kickoff_utc": "2026-05-17T14:00:00Z",
+      "kickoff_utc": "2026-05-17T11:30:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
@@ -992,10 +992,10 @@
       }
     },
     {
-      "match_id": 538147,
-      "home": "Arsenal FC",
-      "away": "Burnley FC",
-      "kickoff_utc": "2026-05-17T14:00:00Z",
+      "match_id": 538152,
+      "home": "Manchester United FC",
+      "away": "Nottingham Forest FC",
+      "kickoff_utc": "2026-05-17T11:30:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
@@ -1172,9 +1172,9 @@
       }
     },
     {
-      "match_id": 538152,
-      "home": "Manchester United FC",
-      "away": "Nottingham Forest FC",
+      "match_id": 538154,
+      "home": "Wolverhampton Wanderers FC",
+      "away": "Fulham FC",
       "kickoff_utc": "2026-05-17T14:00:00Z",
       "xg": {
         "home": 1.45,
@@ -1220,7 +1220,7 @@
       "match_id": 538153,
       "home": "Newcastle United FC",
       "away": "West Ham United FC",
-      "kickoff_utc": "2026-05-17T14:00:00Z",
+      "kickoff_utc": "2026-05-17T16:30:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
@@ -1262,10 +1262,10 @@
       }
     },
     {
-      "match_id": 538154,
-      "home": "Wolverhampton Wanderers FC",
-      "away": "Fulham FC",
-      "kickoff_utc": "2026-05-17T14:00:00Z",
+      "match_id": 538147,
+      "home": "Arsenal FC",
+      "away": "Burnley FC",
+      "kickoff_utc": "2026-05-18T19:00:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
