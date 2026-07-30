@@ -1,0 +1,16 @@
+{
+  "attempts": [
+    {
+      "strategy": "modern",
+      "rows": 0
+    },
+    {
+      "strategy": "legacy-league",
+      "rows": 0
+    },
+    {
+      "strategy": "local-file",
+      "rows": 0
+    }
+  ]
+}
