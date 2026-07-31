@@ -1,0 +1,17 @@
+{
+  "counts": {
+    "no-teams-in-ratings|no-teams-in-ratings": 1
+  },
+  "examples": [
+    {
+      "home_name": "Arsenal FC",
+      "away_name": "Coventry City FC",
+      "home_key": null,
+      "away_key": null,
+      "resolve_home": "no-teams-in-ratings",
+      "resolve_away": "no-teams-in-ratings",
+      "lam_home": 1.45,
+      "lam_away": 1.35
+    }
+  ]
+}
