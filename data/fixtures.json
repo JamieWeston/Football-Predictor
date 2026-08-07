@@ -1,35 +1,68 @@
-{
-  "generated_utc": "2025-08-15T22:46:47.860292Z",
-  "fixtures": [
-    {
-      "match_id": "2025-08-16_1230_AV-NEW",
-      "kickoff_utc": "2025-08-16T11:30:00Z",
-      "home": "Aston Villa",
-      "away": "Newcastle United"
-    },
-    {
-      "match_id": "2025-08-16_1500_BHA-FUL",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Brighton",
-      "away": "Fulham"
-    },
-    {
-      "match_id": "2025-08-16_1500_SUN-WHU",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Sunderland",
-      "away": "West Ham United"
-    },
-    {
-      "match_id": "2025-08-16_1500_TOT-BUR",
-      "kickoff_utc": "2025-08-16T14:00:00Z",
-      "home": "Tottenham Hotspur",
-      "away": "Burnley"
-    },
-    {
-      "match_id": "2025-08-16_1730_WOL-MCI",
-      "kickoff_utc": "2025-08-16T16:30:00Z",
-      "home": "Wolves",
-      "away": "Manchester City"
-    }
-  ]
-}
+[
+  {
+    "match_id": 560542,
+    "utc_date": "2026-08-21T19:00:00Z",
+    "home": "Arsenal FC",
+    "away": "Coventry City FC"
+  },
+  {
+    "match_id": 560543,
+    "utc_date": "2026-08-22T11:30:00Z",
+    "home": "Hull City AFC",
+    "away": "Manchester United FC"
+  },
+  {
+    "match_id": 560544,
+    "utc_date": "2026-08-22T14:00:00Z",
+    "home": "Ipswich Town FC",
+    "away": "Sunderland AFC"
+  },
+  {
+    "match_id": 560545,
+    "utc_date": "2026-08-22T14:00:00Z",
+    "home": "Nottingham Forest FC",
+    "away": "Leeds United FC"
+  },
+  {
+    "match_id": 560546,
+    "utc_date": "2026-08-22T14:00:00Z",
+    "home": "Everton FC",
+    "away": "Crystal Palace FC"
+  },
+  {
+    "match_id": 560547,
+    "utc_date": "2026-08-22T16:30:00Z",
+    "home": "Brentford FC",
+    "away": "Tottenham Hotspur FC"
+  },
+  {
+    "match_id": 560548,
+    "utc_date": "2026-08-23T13:00:00Z",
+    "home": "Manchester City FC",
+    "away": "AFC Bournemouth"
+  },
+  {
+    "match_id": 560549,
+    "utc_date": "2026-08-23T13:00:00Z",
+    "home": "Brighton & Hove Albion FC",
+    "away": "Aston Villa FC"
+  },
+  {
+    "match_id": 560550,
+    "utc_date": "2026-08-23T15:30:00Z",
+    "home": "Newcastle United FC",
+    "away": "Liverpool FC"
+  },
+  {
+    "match_id": 560551,
+    "utc_date": "2026-08-24T19:00:00Z",
+    "home": "Fulham FC",
+    "away": "Chelsea FC"
+  },
+  {
+    "match_id": 560555,
+    "utc_date": "2026-08-28T19:00:00Z",
+    "home": "Crystal Palace FC",
+    "away": "Manchester City FC"
+  }
+]
