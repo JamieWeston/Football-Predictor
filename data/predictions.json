@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-13T19:11:32.940439+00:00",
+  "generated_utc": "2026-08-14T07:40:35.643508+00:00",
   "predictions": [
     {
       "match_id": 560542,
@@ -861,6 +861,51 @@
       "home": "Aston Villa FC",
       "away": "Arsenal FC",
       "kickoff_utc": "2026-08-31T19:00:00Z",
+      "xg": {
+        "home": 1.45,
+        "away": 1.35
+      },
+      "probs": {
+        "home": 0.3964,
+        "draw": 0.2524,
+        "away": 0.3511
+      },
+      "probs_components": {
+        "poisson": {
+          "home": 0.3964,
+          "draw": 0.2524,
+          "away": 0.3511
+        }
+      },
+      "scorelines_top": [
+        {
+          "home_goals": 1,
+          "away_goals": 1,
+          "prob": 0.11903569758886418
+        },
+        {
+          "home_goals": 1,
+          "away_goals": 0,
+          "prob": 0.08817459080656603
+        },
+        {
+          "home_goals": 2,
+          "away_goals": 1,
+          "prob": 0.08630088075192653
+        }
+      ],
+      "notes": {
+        "resolve": {
+          "home": "no-teams-in-ratings",
+          "away": "no-teams-in-ratings"
+        }
+      }
+    },
+    {
+      "match_id": 560566,
+      "home": "Ipswich Town FC",
+      "away": "Liverpool FC",
+      "kickoff_utc": "2026-09-04T19:00:00Z",
       "xg": {
         "home": 1.45,
         "away": 1.35
